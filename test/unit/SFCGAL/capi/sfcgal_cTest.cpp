@@ -110,6 +110,8 @@ BOOST_AUTO_TEST_CASE(testStraightSkeletonPolygon)
   sfcgal_geometry_t *sk = sfcgal_geometry_straight_skeleton(g.get());
   BOOST_CHECK(hasError == false);
   BOOST_CHECK_EQUAL(5, sfcgal_geometry_collection_num_geometries(sk));
+
+  sfcgal_geometry_delete(sk);
 }
 
 BOOST_AUTO_TEST_CASE(testStraightSkeletonMultiPolygon)
@@ -124,6 +126,8 @@ BOOST_AUTO_TEST_CASE(testStraightSkeletonMultiPolygon)
   sfcgal_geometry_t *sk = sfcgal_geometry_straight_skeleton(g.get());
   BOOST_CHECK(hasError == false);
   BOOST_CHECK_EQUAL(8, sfcgal_geometry_collection_num_geometries(sk));
+
+  sfcgal_geometry_delete(sk);
 }
 
 BOOST_AUTO_TEST_CASE(testApproximateMedialAxis)
@@ -172,6 +176,8 @@ BOOST_AUTO_TEST_CASE(testLineSubstring)
   BOOST_CHECK(hasError == false);
 
   BOOST_CHECK(sfcgal_geometry_covers_3d(ls, g2.get()));
+
+  sfcgal_geometry_delete(ls);
 }
 
 BOOST_AUTO_TEST_CASE(testForceRHR)
@@ -192,6 +198,7 @@ BOOST_AUTO_TEST_CASE(testForceRHR)
   // check
   BOOST_CHECK_EQUAL(strGeom, strApi);
   delete[] wkbApi;
+  sfcgal_geometry_delete(rhr);
 }
 
 BOOST_AUTO_TEST_CASE(testForceLHR)
@@ -214,6 +221,7 @@ BOOST_AUTO_TEST_CASE(testForceLHR)
   // check
   BOOST_CHECK_EQUAL(expectedGeom, strApi);
   delete[] wkbApi;
+  sfcgal_geometry_delete(lhr);
 }
 
 BOOST_AUTO_TEST_CASE(testForceRHR_3D)
@@ -238,6 +246,7 @@ BOOST_AUTO_TEST_CASE(testForceRHR_3D)
   // check
   BOOST_CHECK_EQUAL(expectedGeom, strApi);
   delete[] wkbApi;
+  sfcgal_geometry_delete(rhr);
 }
 
 BOOST_AUTO_TEST_CASE(testScaleUniformC)
@@ -446,6 +455,7 @@ BOOST_AUTO_TEST_CASE(testStraightSkeletonPartitionC)
   // check
   BOOST_CHECK_EQUAL(expectedWKT, strApi);
   delete[] wkbApi;
+  sfcgal_geometry_delete(result);
 }
 
 BOOST_AUTO_TEST_CASE(testSolidSetExteriorShell)
