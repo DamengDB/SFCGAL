@@ -190,6 +190,34 @@ Geometry::almostEqual(const Geometry &other, const double tolerance) const
 
   return true;
 }
+
+auto
+Geometry::centroid() const -> Point
+{
+  using namespace SFCGAL::detail;
+  GetPointsVisitor v;
+  accept(v);
+
+  if (v.points.empty()) {
+    BOOST_THROW_EXCEPTION(Exception("No point in geometry."));
+  }
+
+  using Vector_3 = CGAL::Vector_3<Kernel>;
+  Vector_3 c(0, 0, 0);
+  int      numPoint = 0;
+
+  for (auto x = v.points.begin(); x != v.points.end(); ++x) {
+    c = c + (*x)->toVector_3();
+    ++numPoint;
+  }
+
+  BOOST_ASSERT(numPoint);
+  c = c / numPoint;
+  if (is3D())
+    return Point(c.x(), c.y(), c.z());
+  return Point(c.x(), c.y());
+}
+
 ///
 /// Function used to compare geometries
 /// FIXME
