@@ -1850,7 +1850,24 @@ sfcgal_geometry_envelope(const sfcgal_geometry_t *geom) -> sfcgal_geometry_t *
     return nullptr;
   }
 
-  if (geometry->is3D())
-    return result.toShell().release();
   return result.toPolygon().release();
+}
+
+extern "C" auto
+sfcgal_geometry_envelope_3d(const sfcgal_geometry_t *geom)
+    -> sfcgal_geometry_t *
+{
+  const auto      *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  SFCGAL::Envelope result;
+
+  try {
+    result = geometry->envelope();
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During envelope_3d(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return nullptr;
+  }
+
+  return result.toShell().release();
 }
