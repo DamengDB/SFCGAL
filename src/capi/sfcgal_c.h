@@ -119,8 +119,8 @@ sfcgal_geometry_is_simple(const sfcgal_geometry_t *);
  * @ingroup capi
  */
 SFCGAL_API int
-sfcgal_geometry_is_complexity_detail(const sfcgal_geometry_t *geom,
-                                     char **complexity_reason);
+sfcgal_geometry_is_simple_detail(const sfcgal_geometry_t *geom,
+                                 char                   **complexity_reason);
 
 /**
  * Tests if the given geometry is 3D or not
