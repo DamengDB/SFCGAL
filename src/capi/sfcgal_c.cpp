@@ -42,6 +42,7 @@
 #include "SFCGAL/algorithm/intersects.h"
 #include "SFCGAL/algorithm/isSimple.h"
 #include "SFCGAL/algorithm/isValid.h"
+#include "SFCGAL/algorithm/length.h"
 #include "SFCGAL/algorithm/lineSubstring.h"
 #include "SFCGAL/algorithm/minkowskiSum.h"
 #include "SFCGAL/algorithm/offset.h"
@@ -1870,4 +1871,40 @@ sfcgal_geometry_envelope_3d(const sfcgal_geometry_t *geom)
   }
 
   return result.toShell().release();
+}
+
+extern "C" auto
+sfcgal_geometry_length(const sfcgal_geometry_t *geom) -> double
+{
+  const auto *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  double      result;
+
+  try {
+    result = SFCGAL::algorithm::length(*geometry);
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During length(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return result;
+}
+
+extern "C" auto
+sfcgal_geometry_length_3d(const sfcgal_geometry_t *geom) -> double
+{
+  const auto *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  double      result;
+
+  try {
+    result = SFCGAL::algorithm::length3D(*geometry);
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During length(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return result;
 }
