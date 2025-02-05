@@ -94,6 +94,14 @@ BOOST_AUTO_TEST_CASE(testCentroid3D_Triangle2)
   BOOST_CHECK_EQUAL(triangle.centroid().asText(2), Point(0.0, 1.33, 1.33).asText(2));
 }
 
+BOOST_AUTO_TEST_CASE(testCentroid4D_Triangle1)
+{
+  Triangle const triangle(Point(0.0, 0.0, 0.0, 0.0),
+                          Point(0.0, 0.0, 1.0, 1.0),
+                          Point(0.0, 1.0, 0.0, 2.0));
+  BOOST_CHECK_EQUAL(triangle.centroid().asText(2), Point(0.0, 0.33, 0.33, 1.0).asText(2));
+}
+
 BOOST_AUTO_TEST_CASE(testCentroid2D_Triangle)
 {
   Triangle const triangle1(Point(0.0, 0.0), Point(4.0, 0.0), Point(4.0, 4.0));

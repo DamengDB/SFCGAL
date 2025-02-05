@@ -203,19 +203,32 @@ Geometry::centroid() const -> Point
   }
 
   using Vector_3 = CGAL::Vector_3<Kernel>;
-  Vector_3 c(0, 0, 0);
-  int      numPoint = 0;
+  auto     x     = v.points.begin();
+  Vector_3 c     = (*x)->toVector_3();
+  double   m     = std::numeric_limits<double>::quiet_NaN();
+  if ((*x)->isMeasured())
+    m = (*x)->m();
+  int numPoint = 1;
 
-  for (auto x = v.points.begin(); x != v.points.end(); ++x) {
+  for (++x; x != v.points.end(); ++x) {
     c = c + (*x)->toVector_3();
+    if (!std::isnan(m))
+      m += (*x)->m();
     ++numPoint;
   }
 
   BOOST_ASSERT(numPoint);
   c = c / numPoint;
+
+  Point out;
   if (is3D())
-    return Point(c.x(), c.y(), c.z());
-  return Point(c.x(), c.y());
+    out = Point(c.x(), c.y(), c.z());
+  else
+    out = Point(c.x(), c.y());
+  if (!std::isnan(m))
+    out.setM(m / numPoint);
+
+  return out;
 }
 
 ///
