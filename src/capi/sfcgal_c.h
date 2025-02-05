@@ -1224,6 +1224,15 @@ sfcgal_geometry_is_equals(const sfcgal_geometry_t *geom1,
                           double                   tolerance = 0.0);
 
 /**
+ * Returns a Point representing the geometry centroid
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API sfcgal_geometry_t *
+sfcgal_geometry_centroid(const sfcgal_geometry_t *geom);
+
+/**
  * Returns the y monotone partition of a geometry (polygon without hole)
  * @pre isValid(geom) == true
  * @post isValid(return) == true

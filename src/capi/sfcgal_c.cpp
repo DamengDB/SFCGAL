@@ -1931,3 +1931,22 @@ sfcgal_geometry_is_equals(const sfcgal_geometry_t *ga,
 
   return static_cast<int>(result);
 }
+
+extern "C" auto
+sfcgal_geometry_centroid(const sfcgal_geometry_t *geom) -> sfcgal_geometry_t *
+{
+  const auto   *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  SFCGAL::Point result;
+
+  try {
+    result = geometry->centroid();
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During centroid(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return nullptr;
+  }
+
+  std::unique_ptr<SFCGAL::Geometry> out(result.clone());
+  return out.release();
+}
