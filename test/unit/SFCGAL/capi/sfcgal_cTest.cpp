@@ -451,6 +451,26 @@ BOOST_AUTO_TEST_CASE(testEnvelope3D)
   sfcgal_geometry_delete(result);
 }
 
+BOOST_AUTO_TEST_CASE(testCentroid)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  std::unique_ptr<Geometry> const g(io::readWkt(
+      "MULTIPOLYGON (((0 0, 20 0, 20 10, 0 10, 0 0)), ((25 5, 30 5, 30 15, 25 15, 25 5)))"));
+
+  hasError = false;
+  sfcgal_geometry_t *result = sfcgal_geometry_centroid(g.get());
+  BOOST_CHECK(hasError == false);
+
+  char *wkt;
+  size_t len;
+  sfcgal_geometry_as_text_decim(result, 0, &wkt, &len);
+  BOOST_CHECK_EQUAL(std::string(wkt), "POINT (18 6)");
+
+  sfcgal_free_buffer(wkt);
+  sfcgal_geometry_delete(result);
+}
+
 BOOST_AUTO_TEST_CASE(testRotate3DAroundCenter)
 {
   sfcgal_set_error_handlers(printf, on_error);
