@@ -189,21 +189,6 @@ BOOST_AUTO_TEST_CASE(testIsEqual)
     std::unique_ptr<Geometry> const g2(io::readWkt("LINESTRING (0.1 0.1, 2.1 0.1, 1.1 1.1)"));
     // check
     hasError = false;
-    // double maxTolerance = 0.5;
-    // double minTolerance = 0.0001;
-    // for (int i = 0; i < 100 && maxTolerance - minTolerance > 0.0001; i++) {
-    //   double step = (maxTolerance - minTolerance) / 10.0;
-    //   double maxSave = maxTolerance;
-    //   for (double t = minTolerance; t < maxSave; t += step) {
-    //     if (sfcgal_geometry_is_equals(g.get(), g2.get(), t)) {
-    //       maxTolerance = t;
-    //       break;
-    //     } else {
-    //       minTolerance = t;
-    //     }
-    //   }
-    // }
-    // printf("min: %g, max: %g\n", minTolerance, maxTolerance);
     BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_equals(g.get(), g2.get(), 0.100008));
     BOOST_CHECK_EQUAL(false, sfcgal_geometry_is_equals(g.get(), g2.get(), 0.099993));
     BOOST_CHECK(hasError == false);
