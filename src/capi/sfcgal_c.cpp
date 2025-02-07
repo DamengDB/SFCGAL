@@ -1872,7 +1872,10 @@ sfcgal_geometry_envelope_3d(const sfcgal_geometry_t *geom)
     return nullptr;
   }
 
-  return result.toShell().release();
+  if (result.is3D())
+    return result.toShell().release();
+
+  return result.toPolygon().release();
 }
 
 extern "C" auto

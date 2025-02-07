@@ -568,7 +568,7 @@ BOOST_AUTO_TEST_CASE(testEnvelope2D)
   BOOST_CHECK(hasError == false);
 
   sfcgal_geometry_as_text_decim(result, 0, &wkt, &len);
-  BOOST_CHECK_EQUAL(std::string(wkt), "POLYHEDRALSURFACE EMPTY");
+  BOOST_CHECK_EQUAL(std::string(wkt), "POLYGON ((0 0,30 0,30 15,0 15,0 0))");
 
   sfcgal_free_buffer(wkt);
   sfcgal_geometry_delete(result);
