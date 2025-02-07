@@ -103,6 +103,15 @@ sfcgal_geometry_is_valid_detail(const sfcgal_geometry_t *geom,
                                 sfcgal_geometry_t      **invalidity_location);
 
 /**
+ * @deprecated Same as sfcgal_geometry_is_valid_detail
+ * @ingroup capi
+ */
+SFCGAL_API int
+sfcgal_geometry_is_complexity_detail(const sfcgal_geometry_t *geom,
+                                     char                   **invalidity_reason,
+                                     sfcgal_geometry_t **invalidity_location);
+
+/**
  * Tests if the given geometry is simple or not
  * @ingroup capi
  */
