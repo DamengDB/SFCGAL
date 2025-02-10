@@ -1927,7 +1927,15 @@ sfcgal_geometry_length_3d(const sfcgal_geometry_t *geom) -> double
 
 extern "C" auto
 sfcgal_geometry_is_equals(const sfcgal_geometry_t *ga,
-                          const sfcgal_geometry_t *gb, double tolerance) -> int
+                          const sfcgal_geometry_t *gb) -> int
+{
+  return sfcgal_geometry_is_almost_equals(ga, gb, 0.0);
+}
+
+extern "C" auto
+sfcgal_geometry_is_almost_equals(const sfcgal_geometry_t *ga,
+                                 const sfcgal_geometry_t *gb, double tolerance)
+    -> int
 {
   const auto *g1 = reinterpret_cast<const SFCGAL::Geometry *>(ga);
   const auto *g2 = reinterpret_cast<const SFCGAL::Geometry *>(gb);
@@ -1936,7 +1944,7 @@ sfcgal_geometry_is_equals(const sfcgal_geometry_t *ga,
   try {
     result = g1->almostEqual(*g2, tolerance);
   } catch (std::exception &e) {
-    SFCGAL_WARNING("During is_equals(A, B, %g):", tolerance);
+    SFCGAL_WARNING("During is_almost_equals(A, B, %g):", tolerance);
     SFCGAL_WARNING("  with A: %s", g1->asText().c_str());
     SFCGAL_WARNING("  with B: %s", g2->asText().c_str());
     SFCGAL_ERROR("%s", e.what());

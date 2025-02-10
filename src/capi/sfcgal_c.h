@@ -1219,6 +1219,18 @@ SFCGAL_API double
 sfcgal_geometry_length_3d(const sfcgal_geometry_t *geom);
 
 /**
+ * Returns true if geom1 is equals to geom2.
+ *
+ * For each point of geom1 there is a point in geom2.
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API int
+sfcgal_geometry_is_equals(const sfcgal_geometry_t *geom1,
+                          const sfcgal_geometry_t *geom2);
+
+/**
  * Returns true if geom1 is almost equals to geom2.
  *
  * For each point of geom1 there is a point in geom2 within tolerance distance.
@@ -1228,9 +1240,9 @@ sfcgal_geometry_length_3d(const sfcgal_geometry_t *geom);
  * @ingroup capi
  */
 SFCGAL_API int
-sfcgal_geometry_is_equals(const sfcgal_geometry_t *geom1,
-                          const sfcgal_geometry_t *geom2,
-                          double                   tolerance = 0.0);
+sfcgal_geometry_is_almost_equals(const sfcgal_geometry_t *geom1,
+                                 const sfcgal_geometry_t *geom2,
+                                 double                   tolerance = 0.0);
 
 /**
  * Returns a Point representing the geometry centroid

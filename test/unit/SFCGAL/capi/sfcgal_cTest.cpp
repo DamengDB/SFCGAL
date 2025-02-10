@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(testIsEqual)
   sfcgal_set_error_handlers(printf, on_error);
 
   {
-    // retrieve wkb from geometry via C++ api
+    // same wkt
     std::unique_ptr<Geometry> const g(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
     std::unique_ptr<Geometry> const g2(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
     // check
@@ -174,12 +174,12 @@ BOOST_AUTO_TEST_CASE(testIsEqual)
   }
 
   {
-    // retrieve wkb from geometry via C++ api
+    // 0.1 diff between wkt
     std::unique_ptr<Geometry> const g(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
     std::unique_ptr<Geometry> const g2(io::readWkt("LINESTRING (0.1 0.1, 2.1 0.1, 1.1 1.1)"));
     // check
     hasError = false;
-    BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_equals(g.get(), g2.get(), 0.11));
+    BOOST_CHECK_EQUAL( true, sfcgal_geometry_is_almost_equals( g.get(), g2.get(), 0.11 ) );
     BOOST_CHECK(hasError == false);
   }
 
@@ -189,8 +189,8 @@ BOOST_AUTO_TEST_CASE(testIsEqual)
     std::unique_ptr<Geometry> const g2(io::readWkt("LINESTRING (0.1 0.1, 2.1 0.1, 1.1 1.1)"));
     // check
     hasError = false;
-    BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_equals(g.get(), g2.get(), 0.100008));
-    BOOST_CHECK_EQUAL(false, sfcgal_geometry_is_equals(g.get(), g2.get(), 0.099993));
+    BOOST_CHECK_EQUAL( true, sfcgal_geometry_is_almost_equals( g.get(), g2.get(), 0.100008 ) );
+    BOOST_CHECK_EQUAL( false, sfcgal_geometry_is_almost_equals( g.get(), g2.get(), 0.099993 ) );
     BOOST_CHECK(hasError == false);
   }
 }
