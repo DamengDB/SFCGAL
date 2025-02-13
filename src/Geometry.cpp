@@ -11,6 +11,7 @@
 #include "SFCGAL/detail/io/WktWriter.h"
 
 #include "SFCGAL/algorithm/BoundaryVisitor.h"
+#include "SFCGAL/algorithm/centroid.h"
 #include "SFCGAL/algorithm/distance.h"
 #include "SFCGAL/algorithm/distance3d.h"
 
@@ -194,41 +195,9 @@ Geometry::almostEqual(const Geometry &other, const double tolerance) const
 auto
 Geometry::centroid() const -> Point
 {
-  using namespace SFCGAL::detail;
-  GetPointsVisitor v;
-  accept(v);
+  std::unique_ptr<Point> out = algorithm::centroid(*this);
 
-  if (v.points.empty()) {
-    BOOST_THROW_EXCEPTION(Exception("No point in geometry."));
-  }
-
-  using Vector_3 = CGAL::Vector_3<Kernel>;
-  auto     x     = v.points.begin();
-  Vector_3 c     = (*x)->toVector_3();
-  double   m     = std::numeric_limits<double>::quiet_NaN();
-  if ((*x)->isMeasured())
-    m = (*x)->m();
-  int numPoint = 1;
-
-  for (++x; x != v.points.end(); ++x) {
-    c = c + (*x)->toVector_3();
-    if (!std::isnan(m))
-      m += (*x)->m();
-    ++numPoint;
-  }
-
-  BOOST_ASSERT(numPoint);
-  c = c / numPoint;
-
-  Point out;
-  if (is3D())
-    out = Point(c.x(), c.y(), c.z());
-  else
-    out = Point(c.x(), c.y());
-  if (!std::isnan(m))
-    out.setM(m / numPoint);
-
-  return out;
+  return *(out.get());
 }
 
 ///

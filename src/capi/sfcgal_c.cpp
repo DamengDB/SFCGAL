@@ -32,6 +32,7 @@
 #endif
 #include "SFCGAL/algorithm/area.h"
 #include "SFCGAL/algorithm/buffer3D.h"
+#include "SFCGAL/algorithm/centroid.h"
 #include "SFCGAL/algorithm/convexHull.h"
 #include "SFCGAL/algorithm/covers.h"
 #include "SFCGAL/algorithm/difference.h"
@@ -1957,11 +1958,11 @@ sfcgal_geometry_is_almost_equals(const sfcgal_geometry_t *ga,
 extern "C" auto
 sfcgal_geometry_centroid(const sfcgal_geometry_t *geom) -> sfcgal_geometry_t *
 {
-  const auto   *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
-  SFCGAL::Point result;
+  const auto *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  std::unique_ptr<SFCGAL::Point> result;
 
   try {
-    result = geometry->centroid();
+    result = SFCGAL::algorithm::centroid(*geometry);
   } catch (std::exception &e) {
     SFCGAL_WARNING("During centroid(A):");
     SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
@@ -1969,6 +1970,6 @@ sfcgal_geometry_centroid(const sfcgal_geometry_t *geom) -> sfcgal_geometry_t *
     return nullptr;
   }
 
-  std::unique_ptr<SFCGAL::Geometry> out(result.clone());
+  std::unique_ptr<SFCGAL::Geometry> out(result->clone());
   return out.release();
 }

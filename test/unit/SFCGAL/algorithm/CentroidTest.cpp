@@ -44,9 +44,8 @@ BOOST_AUTO_TEST_SUITE(SFCGAL_algorithm_CentroidTest)
 
 BOOST_AUTO_TEST_CASE(testEmpty2D3D)
 {
-  tools::Registry const         &registry = tools::Registry::instance();
-  std::vector<std::string> const typeNames =
-      tools::Registry::instance().getGeometryTypes();
+  tools::Registry const &registry = tools::Registry::instance();
+  std::vector<std::string> const typeNames = tools::Registry::instance().getGeometryTypes();
 
   for (const auto &typeName : typeNames) {
     if (typeName == "Point" || typeName == "Triangle")
@@ -70,27 +69,25 @@ BOOST_AUTO_TEST_CASE(testPoint2D3D)
   BOOST_CHECK_EQUAL(Point(3.0, 4.0).centroid().asText(2), Point(3.0, 4.0).asText(2));
   BOOST_CHECK_EQUAL(Point(3.0, 4.0, 5.0).centroid().asText(2), Point(3.0, 4.0, 5.0).asText(2));
 }
+
 // must return 0.0
 BOOST_AUTO_TEST_CASE(testLineString2D3D)
 {
   BOOST_CHECK_EQUAL(LineString(Point(0.0, 0.0), Point(1.0, 1.0)).centroid().asText(2),
                     Point(0.5, 0.5).asText(2));
-  BOOST_CHECK_EQUAL(LineString(Point(0.0, 0.0, 0.0), Point(1.0, 1.0, 1.0)).centroid().asText(2),
-                    Point(0.5, 0.5, 0.5).asText(2));
+  std::vector<Point> points = {Point(0.0, -1.0, 1.0), Point(2.0, -1.0, 1.0), Point(12.0, -1.0, 1.0)};
+  BOOST_CHECK_EQUAL(LineString(points).centroid().asText(2), Point(6.0, -1.0, 1.0).asText(2));
 }
-
 
 BOOST_AUTO_TEST_CASE(testCentroid3D_Triangle1)
 {
-  Triangle const triangle(Point(0.0, 0.0, 0.0), Point(0.0, 0.0, 1.0),
-                          Point(0.0, 1.0, 0.0));
+  Triangle const triangle(Point(0.0, 0.0, 0.0), Point(0.0, 0.0, 1.0), Point(0.0, 1.0, 0.0));
   BOOST_CHECK_EQUAL(triangle.centroid().asText(2), Point(0.0, 0.33, 0.33).asText(2));
 }
 
 BOOST_AUTO_TEST_CASE(testCentroid3D_Triangle2)
 {
-  Triangle const triangle(Point(0.0, 0.0, 0.0), Point(0.0, 0.0, 4.0),
-                          Point(0.0, 4.0, 0.0));
+  Triangle const triangle(Point(0.0, 0.0, 0.0), Point(0.0, 0.0, 4.0), Point(0.0, 4.0, 0.0));
   BOOST_CHECK_EQUAL(triangle.centroid().asText(2), Point(0.0, 1.33, 1.33).asText(2));
 }
 
@@ -111,31 +108,86 @@ BOOST_AUTO_TEST_CASE(testCentroid2D_Triangle)
   BOOST_CHECK_EQUAL(triangle2.centroid().asText(2), Point(1.33, 2.67).asText(2));
 }
 
-BOOST_AUTO_TEST_CASE(testCentroid3D_Square1x1)
+BOOST_AUTO_TEST_CASE(testCentroid2D_Square1x1)
 {
   std::unique_ptr<Geometry> g(
-      io::readWkt("POLYGON ((0.0 0.0 0.0,0.0 0.0 1.0,0.0 1.0 1.0,0.0 1.0 "
-                  "0.0,0.0 0.0 0.0))"));
-  BOOST_CHECK_EQUAL(g->asText(1), "POLYGON Z ((0.0 0.0 0.0,0.0 0.0 1.0,0.0 1.0 "
-                                  "1.0,0.0 1.0 0.0,0.0 0.0 0.0))");
-  BOOST_CHECK_EQUAL(g->centroid().asText(2), Point(0.0, 0.4, 0.4).asText(2));
+      io::readWkt("POLYGON ((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0))"));
+  BOOST_CHECK_EQUAL(g->asText(1), "POLYGON ((0.0 0.0,1.0 0.0,1.0 1.0,0.0 1.0,0.0 0.0))");
+  BOOST_CHECK_EQUAL(g->centroid().asText(2), Point(0.5, 0.5).asText(2));
+}
+
+BOOST_AUTO_TEST_CASE(testCentroid3D_Square1x1)
+{
+  { // vertical geometry (no 2D surface)
+    std::unique_ptr<Geometry> g(io::readWkt("POLYGON ((0.0 0.0 0.0,0.0 0.0 1.0,0.0 1.0 1.0,0.0 1.0 "
+                                            "0.0,0.0 0.0 0.0))"));
+    BOOST_CHECK_EQUAL(g->asText(1),
+                      "POLYGON Z ((0.0 0.0 0.0,0.0 0.0 1.0,0.0 1.0 "
+                      "1.0,0.0 1.0 0.0,0.0 0.0 0.0))");
+    try {
+      g->centroid();
+      BOOST_CHECK_MESSAGE(false, "vertical geometry (no 2D surface) should fail");
+    } catch (InappropriateGeometryException &) {
+      // ok
+    }
+  }
+
+  {
+    std::unique_ptr<Geometry> g(io::readWkt("POLYGON ((0.0 0.0 0.0,"
+                                            "1.0 0.0 1.0,"
+                                            "1.0 1.0 1.0,"
+                                            "0.0 1.0 0.0,"
+                                            "0.0 0.0 0.0))"));
+    BOOST_CHECK_EQUAL(g->asText(1),
+                      "POLYGON Z ((0.0 0.0 0.0,"
+                      "1.0 0.0 1.0,"
+                      "1.0 1.0 1.0,"
+                      "0.0 1.0 0.0,"
+                      "0.0 0.0 0.0))");
+    BOOST_CHECK_EQUAL(g->centroid().asText(2), Point(0.5, 0.5, 0.5).asText(2));
+  }
 }
 
 BOOST_AUTO_TEST_CASE(testCentroid3D_Square4X4)
 {
-  std::string const wkt("POLYGON ((0.0 0.0 0.0,0.0 0.0 4.0,0.0 4.0 4.0,0.0 4.0 "
-                        "0.0,0.0 0.0 0.0))");
-  std::unique_ptr<Geometry> const g(io::readWkt(wkt));
-  BOOST_CHECK_EQUAL(g->centroid().asText(2), Point(0.0, 1.6, 1.6).asText(2));
+  std::unique_ptr<Geometry> g(io::readWkt("POLYGON ((0.0 0.0 0.0,"
+                                          "4.0 0.0 4.0,"
+                                          "4.0 4.0 4.0,"
+                                          "0.0 4.0 0.0,"
+                                          "0.0 0.0 0.0))"));
+  BOOST_CHECK_EQUAL(g->asText(1),
+                    "POLYGON Z ((0.0 0.0 0.0,"
+                    "4.0 0.0 4.0,"
+                    "4.0 4.0 4.0,"
+                    "0.0 4.0 0.0,"
+                    "0.0 0.0 0.0))");
+  BOOST_CHECK_EQUAL(g->centroid().asText(2), Point(2.0, 2.0, 2.0).asText(2));
 }
 
 BOOST_AUTO_TEST_CASE(testCentroid3D_Square4X4WithHole)
 {
-  std::string const wkt(
-      "POLYGON ((0.0 0.0 0.0,0.0 0.0 4.0,0.0 4.0 4.0,0.0 4.0 0.0,0.0 0.0 "
-      "0.0),(0.0 2.0 2.0,0.0 3.0 2.0,0.0 3.0 3.0,0.0 2.0 3.0,0.0 2.0 2.0))");
-  std::unique_ptr<Geometry> const g(io::readWkt(wkt));
-  BOOST_CHECK_EQUAL(g->centroid().asText(2), Point(0.0, 2.0, 2.0).asText(2));
+  std::unique_ptr<Geometry> g(io::readWkt("POLYGON ((0.0 0.0 0.0,"
+                                          "4.0 0.0 4.0,"
+                                          "4.0 4.0 4.0,"
+                                          "0.0 4.0 0.0,"
+                                          "0.0 0.0 0.0),"
+                                          "(1.0 1.0 1.0,"
+                                          "3.0 1.0 3.0,"
+                                          "3.0 3.0 3.0,"
+                                          "1.0 3.0 1.0,"
+                                          "1.0 1.0 1.0))"));
+  BOOST_CHECK_EQUAL(g->asText(1),
+                    "POLYGON Z ((0.0 0.0 0.0,"
+                    "4.0 0.0 4.0,"
+                    "4.0 4.0 4.0,"
+                    "0.0 4.0 0.0,"
+                    "0.0 0.0 0.0),"
+                    "(1.0 1.0 1.0,"
+                    "3.0 1.0 3.0,"
+                    "3.0 3.0 3.0,"
+                    "1.0 3.0 1.0,"
+                    "1.0 1.0 1.0))");
+  BOOST_CHECK_EQUAL(g->centroid().asText(2), Point(2.0, 2.0, 2.0).asText(2));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
