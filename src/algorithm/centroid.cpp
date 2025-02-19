@@ -43,15 +43,15 @@ using Vector_3   = CGAL::Vector_3<SFCGAL::Kernel>;
 ///
 ///
 template <typename T>
-std::function<WeightedCentroid(const T &)> weightedCentroidLambda =
-    [](const T &g) -> WeightedCentroid {
+std::function<WeightedCentroid(const T &, bool)> weightedCentroidLambda =
+    [](const T &g, bool enable3DComputation) -> WeightedCentroid {
   SFCGAL::Kernel::FT totalArea = 0.0;
   SFCGAL::Kernel::FT totalM    = 0.0;
   Vector_3           totalWeightedCentroid;
 
   for (typename T::const_iterator ite = g.begin(); ite != g.end(); ite++) {
     // compute geometry area+centroid
-    WeightedCentroid wc = weightedCentroid(*ite);
+    WeightedCentroid wc = weightedCentroid(*ite, enable3DComputation);
 
     // update totals
     if (ite == g.begin())
@@ -93,44 +93,74 @@ centroid(const Geometry &g) -> std::unique_ptr<Point>
   return std::make_unique<Point>(out);
 }
 
+///
+///
+///
 auto
-weightedCentroid(const Geometry &g) -> WeightedCentroid
+centroid3D(const Geometry &g) -> std::unique_ptr<Point>
+{
+  if (g.isEmpty()) {
+    BOOST_THROW_EXCEPTION(
+        InappropriateGeometryException("No point in geometry."));
+  }
+
+  WeightedCentroid wCent = weightedCentroid(g, true);
+
+  Point out;
+  if (g.is3D())
+    out = Point(wCent.centroid.x(), wCent.centroid.y(), wCent.centroid.z());
+  else
+    out = Point(wCent.centroid.x(), wCent.centroid.y());
+
+  if (g.isMeasured())
+    out.setM(CGAL::to_double(wCent.m));
+
+  return std::make_unique<Point>(out);
+}
+///
+///
+///
+auto
+weightedCentroid(const Geometry &g, bool enable3DComputation)
+    -> WeightedCentroid
 {
   WeightedCentroid wCent;
   switch (g.geometryTypeId()) {
   case TYPE_POINT:
-    wCent = WeightedCentroid(0.0, g.as<Point>().toVector_3());
+    wCent = WeightedCentroid(0.0, g.as<Point>().toVector_3(),
+                             (g.isMeasured() ? g.as<Point>().m() : 0.0));
     break;
   case TYPE_LINESTRING:
-    wCent = weightedCentroid(g.as<LineString>());
+    wCent = weightedCentroid(g.as<LineString>(), enable3DComputation);
     break;
 
   case TYPE_POLYGON:
-    wCent = weightedCentroid(g.as<Polygon>());
+    wCent = weightedCentroid(g.as<Polygon>(), enable3DComputation);
     break;
 
   case TYPE_TRIANGLE:
-    wCent = weightedCentroid(g.as<Triangle>());
+    wCent = weightedCentroid(g.as<Triangle>(), enable3DComputation);
     break;
 
   case TYPE_MULTIPOINT:
   case TYPE_MULTILINESTRING:
   case TYPE_MULTIPOLYGON:
+  case TYPE_MULTISOLID:
   case TYPE_GEOMETRYCOLLECTION:
-    wCent = weightedCentroid(g.as<GeometryCollection>());
+    wCent = weightedCentroid(g.as<GeometryCollection>(), enable3DComputation);
     break;
 
   case TYPE_TRIANGULATEDSURFACE:
-    wCent = weightedCentroid(g.as<TriangulatedSurface>());
+    wCent = weightedCentroid(g.as<TriangulatedSurface>(), enable3DComputation);
     break;
 
   case TYPE_POLYHEDRALSURFACE:
-    // wCent = weightedCentroid(g.as<PolyhedralSurface>());
+    wCent = weightedCentroid(g.as<PolyhedralSurface>(), enable3DComputation);
+    break;
 
   case TYPE_SOLID:
-  case TYPE_MULTISOLID:
-    BOOST_THROW_EXCEPTION(NotImplementedException(
-        "Centroid of solid gemotry is not implemented."));
+    wCent = weightedCentroid(g.as<Solid>(), enable3DComputation);
+    break;
   }
 
   return wCent;
@@ -145,23 +175,31 @@ weightedCentroid(const Geometry &g) -> WeightedCentroid
 ///
 ///
 auto
-weightedCentroid(const Triangle &g) -> WeightedCentroid
+weightedCentroid(const Triangle &g, bool enable3DComputation)
+    -> WeightedCentroid
 {
-  g.toTriangle_2().area();
-  return weightedCentroid(g.vertex(0), g.vertex(1), g.vertex(2));
+  return weightedCentroid(g.vertex(0), g.vertex(1), g.vertex(2),
+                          enable3DComputation);
 }
 
 ///
 ///
 ///
 auto
-weightedCentroid(const Point &a, const Point &b, const Point &c)
-    -> WeightedCentroid
+weightedCentroid(const Point &a, const Point &b, const Point &c,
+                 bool enable3DComputation) -> WeightedCentroid
 {
-  // std::cout << "============== weightedCentroid(Triangle)\n";
   // compute triangle area
-  SFCGAL::Kernel::FT area = SFCGAL::Kernel().compute_area_2_object()(
-      a.toPoint_2(), b.toPoint_2(), c.toPoint_2());
+  SFCGAL::Kernel::FT area = 0.0;
+  if (enable3DComputation) {
+    // compute 3D area
+    Triangle_3 t(a.toPoint_3(), b.toPoint_3(), c.toPoint_3());
+    area = CGAL::sqrt(CGAL::to_double(t.squared_area()));
+  } else {
+    // compute 2D signed area
+    area = SFCGAL::Kernel().compute_area_2_object()(
+        a.toPoint_2(), b.toPoint_2(), c.toPoint_2());
+  }
 
   // compute triangle centroid
   Vector_3 out = c.toVector_3();
@@ -174,9 +212,6 @@ weightedCentroid(const Point &a, const Point &b, const Point &c)
     m = (a.m() + b.m() + c.m()) / 3.0;
   }
 
-  // std::cout << "Triangle weightedCentroid: " << out << "\n";
-  // std::cout << "Triangle area: " << area << "\n";
-
   return {area, out, m};
 }
 
@@ -184,9 +219,9 @@ weightedCentroid(const Point &a, const Point &b, const Point &c)
 ///
 ///
 auto
-weightedCentroid(const LineString &g) -> WeightedCentroid
+weightedCentroid(const LineString &g, bool enable3DComputation)
+    -> WeightedCentroid
 {
-  // std::cout << "============== weightedCentroid(LineString)\n";
   SFCGAL::Kernel::FT totalArea = 0.0;
   SFCGAL::Kernel::FT totalM    = 0.0;
   Vector_3           totalWeightedCentroid;
@@ -194,8 +229,8 @@ weightedCentroid(const LineString &g) -> WeightedCentroid
   if (g.isClosed()) { // ie. a polygon
     for (size_t i = 1; i < g.numPoints() - 2; i++) {
       // compute triangle area+centroid
-      WeightedCentroid wc =
-          weightedCentroid(g.pointN(0), g.pointN(i), g.pointN(i + 1));
+      WeightedCentroid wc = weightedCentroid(
+          g.pointN(0), g.pointN(i), g.pointN(i + 1), enable3DComputation);
 
       // update totals
       if (i == 1)
@@ -204,10 +239,6 @@ weightedCentroid(const LineString &g) -> WeightedCentroid
         totalWeightedCentroid += wc.area * wc.centroid;
       totalM += wc.area * wc.m;
       totalArea += wc.area;
-      // std::cout << "Polygon weightedCentroid: " << wc.area * wc.centroid <<
-      // "\n"; std::cout << "Polygon area: " << wc.area << "\n"; std::cout <<
-      // "Polygon totalweightedCentroid: " << totalWeightedCentroid << "\n";
-      // std::cout << "Polygon totalArea: " << totalArea << "\n";
     }
 
   } else { // ie. a linestring
@@ -225,11 +256,6 @@ weightedCentroid(const LineString &g) -> WeightedCentroid
       if (a.isMeasured() && b.isMeasured())
         totalM += (a.m() + b.m()) * 0.5 * len;
       totalArea += len;
-      // std::cout << "LineString weightedCentroid: " << (a.toVector_3() + (ba
-      // / 2.0)) * len << "\n"; std::cout << "LineString len: " << len << "\n";
-      // std::cout << "LineString totalweightedCentroid: " <<
-      // totalWeightedCentroid << "\n"; std::cout << "LineString totalArea: " <<
-      // totalArea << "\n";
     }
   }
 
@@ -248,18 +274,16 @@ weightedCentroid(const LineString &g) -> WeightedCentroid
 ///
 ///
 auto
-weightedCentroid(const Polygon &g) -> WeightedCentroid
+weightedCentroid(const Polygon &g, bool enable3DComputation) -> WeightedCentroid
 {
-  // std::cout << "============== weightedCentroid(Polygon)\n";
   SFCGAL::Kernel::FT totalArea = 0.0;
   SFCGAL::Kernel::FT totalM    = 0.0;
   Vector_3           totalWeightedCentroid;
 
   for (size_t i = 0; i < g.numRings(); i++) {
     try {
-      WeightedCentroid ringCentroid = weightedCentroid(g.ringN(i));
-      // Kernel::FT const ringCentroid = CGAL::abs( signedCentroid( g.ringN( i )
-      // ) );
+      WeightedCentroid ringCentroid =
+          weightedCentroid(g.ringN(i), enable3DComputation);
 
       if (i == 0) {
         // exterior ring
@@ -272,14 +296,6 @@ weightedCentroid(const Polygon &g) -> WeightedCentroid
         totalM -= ringCentroid.area * ringCentroid.m;
         totalWeightedCentroid -= ringCentroid.area * ringCentroid.centroid;
       }
-      // std::cout << "sub Polygon weightedCentroid: " << ringCentroid.area *
-      // ringCentroid.centroid
-      //           << "\n";
-      // std::cout << "sub Polygon area: " << ringCentroid.area << "\n";
-      // std::cout << "sub Polygon totalweightedCentroid: " <<
-      // totalWeightedCentroid << "\n"; std::cout << "sub Polygon totalArea: "
-      // << totalArea << "\n";
-
     } catch (InappropriateGeometryException &e) {
       BOOST_THROW_EXCEPTION(InappropriateGeometryException(
           (boost::format("SFCGAL::algorithm::Centroid of Polygon failed at "
@@ -299,199 +315,71 @@ weightedCentroid(const Polygon &g) -> WeightedCentroid
 ///
 ///
 auto
-weightedCentroid(const GeometryCollection &g) -> WeightedCentroid
+weightedCentroid(const GeometryCollection &g, bool enable3DComputation)
+    -> WeightedCentroid
 {
-  return weightedCentroidLambda<GeometryCollection>(g);
+  return weightedCentroidLambda<GeometryCollection>(g, enable3DComputation);
 }
 
 ///
 ///
 ///
 auto
-weightedCentroid(const TriangulatedSurface &g) -> WeightedCentroid
+weightedCentroid(const TriangulatedSurface &g, bool enable3DComputation)
+    -> WeightedCentroid
 {
-  return weightedCentroidLambda<TriangulatedSurface>(g);
+  return weightedCentroidLambda<TriangulatedSurface>(g, enable3DComputation);
 }
 
 ///
 ///
 ///
 auto
-weightedCentroid(const PolyhedralSurface &g) -> WeightedCentroid
+weightedCentroid(const PolyhedralSurface &g, bool enable3DComputation)
+    -> WeightedCentroid
 {
-  return weightedCentroidLambda<PolyhedralSurface>(g);
+  return weightedCentroidLambda<PolyhedralSurface>(g, enable3DComputation);
 }
 
-///----------------------------------------------------------------------------------
-/// -- centroid3D
-///----------------------------------------------------------------------------------
-
 ///
 ///
 ///
-// auto
-//   centroid3D( const Geometry &g, NoValidityCheck /*unused*/ ) ->
-//   std::unique_ptr<Point>
-// {
-//   switch ( g.geometryTypeId() )
-//   {
-//     case TYPE_POINT:
-//     case TYPE_LINESTRING:
-//       return 0;
+auto
+weightedCentroid(const Solid &g, bool enable3DComputation) -> WeightedCentroid
+{
+  SFCGAL::Kernel::FT totalArea = 0.0;
+  SFCGAL::Kernel::FT totalM    = 0.0;
+  Vector_3           totalWeightedCentroid;
 
-//     case TYPE_POLYGON:
-//       return centroid3D( g.as<Polygon>() );
+  for (size_t i = 0; i < g.numShells(); i++) {
+    try {
+      WeightedCentroid shellCentroid =
+          weightedCentroid(g.shellN(i), enable3DComputation);
 
-//     case TYPE_TRIANGLE:
-//       return centroid3D( g.as<Triangle>() );
+      if (i == 0) {
+        // exterior shell
+        totalArea             = shellCentroid.area;
+        totalM                = shellCentroid.area * shellCentroid.m;
+        totalWeightedCentroid = shellCentroid.area * shellCentroid.centroid;
+      } else {
+        // interior shell
+        totalArea -= shellCentroid.area;
+        totalM -= shellCentroid.area * shellCentroid.m;
+        totalWeightedCentroid -= shellCentroid.area * shellCentroid.centroid;
+      }
+    } catch (InappropriateGeometryException &e) {
+      BOOST_THROW_EXCEPTION(InappropriateGeometryException(
+          (boost::format("SFCGAL::algorithm::Centroid of Solid failed at "
+                         "shell %d with cause: \n%s") %
+           i % e.what())
+              .str()));
+    }
+  }
 
-//     case TYPE_MULTIPOINT:
-//     case TYPE_MULTILINESTRING:
-//     case TYPE_MULTIPOLYGON:
-//     case TYPE_GEOMETRYCOLLECTION:
-//       return centroid3D( g.as<GeometryCollection>() );
+  totalWeightedCentroid /= totalArea;
+  totalM /= totalArea;
 
-//     case TYPE_TRIANGULATEDSURFACE:
-//       return centroid3D( g.as<TriangulatedSurface>() );
-
-//     case TYPE_POLYHEDRALSURFACE:
-//       return centroid3D( g.as<PolyhedralSurface>() );
-
-//     case TYPE_SOLID:
-//     case TYPE_MULTISOLID:
-//       return 0;
-//   }
-
-//   BOOST_THROW_EXCEPTION( Exception( "missing case in
-//   SFCGAL::algorithm::centroid3D" ) );
-// }
-
-// auto
-//   centroid3D( const Geometry &g ) -> std::unique_ptr<Point>
-// {
-//   SFCGAL_ASSERT_GEOMETRY_VALIDITY_3D( g );
-//   return centroid3D( g, NoValidityCheck() );
-// }
-// ///
-// ///
-// ///
-// auto
-//   centroid3D( const Polygon &g ) -> std::unique_ptr<Point>
-// {
-//   double result = 0.0;
-
-//   if ( g.isEmpty() )
-//   {
-//     return result;
-//   }
-
-//   Point_3 a;
-//   Point_3 b;
-//   Point_3 c;
-//   algorithm::plane3D<Kernel>( g, a, b, c );
-
-//   /*
-//    * compute polygon basis (CGAL doesn't build an orthonormal basis so that
-//    * computing the 2D centroid in this basis would lead to scale effects) ux
-//    = bc uz
-//    * = bc^ba uy = uz^ux
-//    *
-//    * Note that the basis is rounded to double (CGAL::sqrt)
-//    */
-//   Point_3 ux = c - b;
-//   Point_3 uz = CGAL::cross_product( ux, a - b );
-//   ux = ux / CGAL::sqrt( CGAL::to_double( ux.squared_length() ) );
-//   uz = uz / CGAL::sqrt( CGAL::to_double( uz.squared_length() ) );
-//   Point_3 const uy = CGAL::cross_product( uz, ux );
-
-//   /*
-//    * compute the centroid for each ring in the local basis
-//    */
-//   for ( size_t i = 0; i < g.numRings(); i++ )
-//   {
-//     const LineString &ring = g.ringN( i );
-
-//     CGAL::Polygon_2<Kernel> projectedPolygon;
-
-//     for ( size_t j = 0; j < ring.numPoints() - 1; j++ )
-//     {
-//       Point_3 const point = ring.pointN( j ).toPoint_3();
-//       CGAL::Point_2<Kernel> const projectedPoint( ( point - b ) * ux, ( point
-//       - b ) * uy ); projectedPolygon.push_back( projectedPoint );
-//     }
-
-//     if ( i == 0 )
-//     {
-//       // exterior ring
-//       result += CGAL::to_double( CGAL::abs( projectedPolygon.centroid() ) );
-//     }
-//     else
-//     {
-//       // interior ring
-//       result -= CGAL::to_double( CGAL::abs( projectedPolygon.centroid() ) );
-//     }
-//   }
-
-//   return result;
-// }
-
-// ///
-// ///
-// ///
-// auto
-//   centroid3D( const Triangle &g ) -> std::unique_ptr<Point>
-// {
-//   CGAL::Triangle_3<Kernel> const triangle( g.vertex( 0 ).toPoint_3(),
-//   g.vertex( 1 ).toPoint_3(), g.vertex( 2 ).toPoint_3() ); return sqrt(
-//   CGAL::to_double( triangle.squared_centroid() ) );
-// }
-
-// ///
-// ///
-// ///
-// auto
-//   centroid3D( const GeometryCollection &g ) -> std::unique_ptr<Point>
-// {
-//   double result = 0.0;
-
-//   for ( size_t i = 0; i < g.numGeometries(); i++ )
-//   {
-//     result += centroid3D( g.geometryN( i ) );
-//   }
-
-//   return result;
-// }
-
-// ///
-// ///
-// ///
-// auto
-//   centroid3D( const PolyhedralSurface &g ) -> std::unique_ptr<Point>
-// {
-//   double centroid = 0.0;
-
-//   for ( size_t i = 0; i < g.numPolygons(); i++ )
-//   {
-//     centroid += centroid3D( g.polygonN( i ) );
-//   }
-
-//   return centroid;
-// }
-
-// ///
-// ///
-// ///
-// auto
-//   centroid3D( const TriangulatedSurface &g ) -> std::unique_ptr<Point>
-// {
-//   double result = 0.0;
-
-//   for ( size_t i = 0; i < g.numGeometries(); i++ )
-//   {
-//     result += centroid3D( g.geometryN( i ) );
-//   }
-
-//   return result;
-// }
+  return {totalArea, totalWeightedCentroid, totalM};
+}
 
 } // namespace SFCGAL::algorithm
