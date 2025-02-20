@@ -52,6 +52,8 @@ include:
 
 sast:
   stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 clang-format:
   stage: lint
@@ -62,6 +64,8 @@ clang-format:
 debian_testing_gcc:
   extends: .debian_testing_gcc
   stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 build:debian-docker-image:
   extends: .build:debian-docker-image
