@@ -38,6 +38,7 @@ include:
   - local: '/.gitlab/pipeline/debian.yml'
     rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
 
   # - local: /.gitlab/pipeline/test-code.yml
   # - local: /.gitlab/pipeline/build-windows.yml
