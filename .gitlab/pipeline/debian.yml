@@ -1,5 +1,4 @@
-debian_testing_gcc:
-  stage: test
+.debian_testing_gcc:
   image: debian:testing
 
   script:

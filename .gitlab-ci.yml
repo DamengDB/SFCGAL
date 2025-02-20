@@ -59,6 +59,10 @@ clang-format:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")'
 
+debian_testing_gcc:
+  extends: .debian_testing_gcc
+  stage: test
+
 build:debian-docker-image:
   extends: .build:debian-docker-image
   stage: build
