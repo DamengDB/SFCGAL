@@ -38,7 +38,7 @@ include:
   - local: /.gitlab/pipeline/debian.yml
   # - local: /.gitlab/pipeline/test-code.yml
   # - local: /.gitlab/pipeline/build-windows.yml
-  # - local: /.gitlab/pipeline/build-debian-docker.yml
+  - local: /.gitlab/pipeline/build-debian-docker.yml
   #   rules:
   #     # on default branch
   #     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH

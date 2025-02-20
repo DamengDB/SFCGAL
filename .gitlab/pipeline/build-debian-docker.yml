@@ -29,7 +29,6 @@
 
 
 .push:debian-docker-latest:
-  stage: deploy
   image: docker:latest
   services:
     - name: docker:dind
@@ -50,7 +49,6 @@
 
 
 .push:debian-docker-tag:
-  stage: deploy
   image: docker:latest
   services:
     - name: docker:dind
