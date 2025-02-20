@@ -56,8 +56,8 @@ sast:
 clang-format:
   stage: lint
   extends: .clang-format
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")
 
 debian_testing_gcc:
   extends: .debian_testing_gcc
@@ -66,16 +66,14 @@ debian_testing_gcc:
 build:debian-docker-image:
   extends: .build:debian-docker-image
   stage: build
-  # rules:
-  #   # on default branch
-  #   - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  #     # when: always
-  #   # on a tag
-  #   - if: $CI_COMMIT_TAG
-  #     # when: always
-  #   # on a MR if previous jobs are successful
-  #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-  #     when: manual
+  rules:
+    # on default branch
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    # on a tag
+    - if: $CI_COMMIT_TAG
+    # on a MR if previous jobs are successful
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: manual
 
 push:debian-docker-latest:
   extends: .push:debian-docker-latest
@@ -88,14 +86,13 @@ push:debian-docker-tag:
 build:documentation:
   stage: build
   image: ${PYTHON_DOCKER_IMAGE}
-  only:
-    refs:
-      - master
-    changes:
-      - "src/*.h"
-      - "src/*.cpp"
-      - "website/docs/*.md"
-      - ".gitlab-ci.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - "src/*.h"
+        - "src/*.cpp"
+        - "website/docs/*.md"
+        - ".gitlab-ci.yml"
   before_script:
     - apt-get update -qq
     - apt-get install -y doxygen
@@ -114,14 +111,13 @@ build:documentation:
 # -- DEPLOYMENT JOBS ------------
 deploy:pages:
   stage: deploy
-  only:
-    refs:
-      - master
-    changes:
-      - "src/*.h"
-      - "src/*.cpp"
-      - "website/docs/*.md"
-      - ".gitlab-ci.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - "src/*.h"
+        - "src/*.cpp"
+        - "website/docs/*.md"
+        - ".gitlab-ci.yml"
   needs:
     - job: build:documentation
       artifacts: true
