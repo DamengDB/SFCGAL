@@ -1,8 +1,8 @@
 stages:
   - .pre
   - lint
-  - build
   - test
+  - build
   - deploy
   - .post
 
