@@ -35,14 +35,14 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   #  - local: /.gitlab/pipeline/sonar.yml
   - local: '/.gitlab/pipeline/lint-code.yml'
-    rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")
-      when: always
+    # rules:
+    # - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")
+    #   when: always
 
   - local: '/.gitlab/pipeline/debian.yml'
-    rules:
-      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-        when: always
+    # rules:
+    #   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    #     when: always
 
   # - local: /.gitlab/pipeline/test-code.yml
   # - local: /.gitlab/pipeline/build-windows.yml
