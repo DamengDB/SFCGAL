@@ -58,7 +58,6 @@ clang-format:
   extends: .clang-format
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")'
-      when: always
   #     changes:
   #       - "src/**/*.{c,h,cpp,hpp}"
   #       - ".clang-format"
