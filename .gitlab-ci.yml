@@ -37,7 +37,18 @@ include:
   - local: /.gitlab/pipeline/lint-code.yml
   - local: /.gitlab/pipeline/test-code.yml
   # - local: /.gitlab/pipeline/build-windows.yml
-  # - local: /.gitlab/pipeline/build-debian-docker.yml
+  - local: /.gitlab/pipeline/build-debian-docker.yml
+    rules:
+      # on default branch
+      - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+        when: always
+      # on a tag
+      - if: $CI_COMMIT_TAG
+        when: always
+      # on a MR if previous jobs are successful
+      - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+        when: manual
+
 
 sast:
   stage: test
