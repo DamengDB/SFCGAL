@@ -21,9 +21,3 @@
   #       - "src/**/*.{c,h,cpp,hpp}"
   #       - ".clang-format"
   #       - ".clang-format-ignore"
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")'
-      changes:
-        - "src/**/*.{c,h,cpp,hpp}"
-        - ".clang-format"
-        - ".clang-format-ignore"
