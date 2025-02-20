@@ -34,9 +34,6 @@
     - name: docker:dind
   variables:
     GIT_STRATEGY: none
-  only:
-    refs:
-      - master
   needs: ['build:debian-docker-image']
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -54,9 +51,6 @@
     - name: docker:dind
   variables:
     GIT_STRATEGY: none
-  only:
-    refs:
-      - tags
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
