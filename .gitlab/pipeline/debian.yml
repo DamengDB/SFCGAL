@@ -1,4 +1,4 @@
-.debian_testing_gcc:
+debian_testing_gcc:
   image: debian:testing
 
   script:

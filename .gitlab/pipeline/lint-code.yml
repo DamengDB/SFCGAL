@@ -3,7 +3,7 @@
 #######################
 # Check if the C++ code is consistent in code formatting (correct amount of tabs/spaces,
 # correct indentation etc.)
-.clang-format:
+clang-format:
   image:
     name: kszonek/clang-format-16
     entrypoint: [""]
