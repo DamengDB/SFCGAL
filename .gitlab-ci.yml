@@ -55,7 +55,29 @@ sast:
 
 clang-format:
   stage: lint
-  extends: .clang-format
+  image:
+    name: kszonek/clang-format-16
+    entrypoint: [""]
+  script:
+    # We need to use simple BusyBox `find` syntax here.
+    - >
+      clang-format --dry-run --Werror
+      $(find src/ -iname '*.cpp' -or -iname '*.hpp' -or -iname '*.c' -or -iname '*.h')
+  # script:
+  #   - run-clang-format.py -r src --style=file
+  # DISABLED because it hides all other job uin CI
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")'
+  #     changes:
+  #       - "src/**/*.{c,h,cpp,hpp}"
+  #       - ".clang-format"
+  #       - ".clang-format-ignore"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")'
+      changes:
+        - "src/**/*.{c,h,cpp,hpp}"
+        - ".clang-format"
+        - ".clang-format-ignore"
 
 build:documentation:
   stage: build
