@@ -36,6 +36,9 @@ include:
   #  - local: /.gitlab/pipeline/sonar.yml
   - local: '/.gitlab/pipeline/lint-code.yml'
   - local: '/.gitlab/pipeline/debian.yml'
+    rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
   # - local: /.gitlab/pipeline/test-code.yml
   # - local: /.gitlab/pipeline/build-windows.yml
   - local: '/.gitlab/pipeline/build-debian-docker.yml'
@@ -59,11 +62,6 @@ clang-format:
   stage: lint
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")
-
-debian_testing_gcc:
-  stage: test
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 build:debian-docker-image:
   stage: build
