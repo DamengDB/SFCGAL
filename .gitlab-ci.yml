@@ -35,10 +35,14 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   #  - local: /.gitlab/pipeline/sonar.yml
   - local: '/.gitlab/pipeline/lint-code.yml'
+    rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")
+      when: always
+
   - local: '/.gitlab/pipeline/debian.yml'
     rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: always
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        when: always
 
   # - local: /.gitlab/pipeline/test-code.yml
   # - local: /.gitlab/pipeline/build-windows.yml
@@ -59,10 +63,12 @@ sast:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-clang-format:
-  stage: lint
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")
+# clang-format:
+#   stage: lint
+
+# debian_testing_gcc:
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 build:debian-docker-image:
   stage: build

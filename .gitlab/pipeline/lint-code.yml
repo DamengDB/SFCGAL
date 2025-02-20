@@ -4,6 +4,7 @@
 # Check if the C++ code is consistent in code formatting (correct amount of tabs/spaces,
 # correct indentation etc.)
 clang-format:
+  stage: lint
   image:
     name: kszonek/clang-format-16
     entrypoint: [""]
@@ -15,9 +16,9 @@ clang-format:
   # script:
   #   - run-clang-format.py -r src --style=file
   # DISABLED because it hides all other job uin CI
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")'
-  #     changes:
-  #       - "src/**/*.{c,h,cpp,hpp}"
-  #       - ".clang-format"
-  #       - ".clang-format-ignore"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push")
+      changes:
+        - "src/**/*.{c,h,cpp,hpp}"
+        - ".clang-format"
+        - ".clang-format-ignore"
