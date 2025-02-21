@@ -53,6 +53,151 @@ on_error(const char * /*msg*/, ...) -> int
   return 0;
 }
 
+BOOST_AUTO_TEST_CASE(testIs3D)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  // retrieve wkb from geometry via C++ api
+  std::unique_ptr<Geometry> const g(io::readWkt("POLYGON ((0 0, 20 0, 20 10, 0 10, 0 0))"));
+  // check
+  BOOST_CHECK_EQUAL(false, sfcgal_geometry_is_3d(g.get()));
+
+  std::unique_ptr<Geometry> const g2(
+      io::readWkt("POLYGON Z ((0 0 0, 20 0 0, 20 10 0, 0 10 0, 0 0 0))"));
+  // check
+  BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_3d(g2.get()));
+}
+
+BOOST_AUTO_TEST_CASE(testIsValid)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  // ========== 2D
+  // retrieve wkb from geometry via C++ api
+  std::unique_ptr<Geometry> const g(io::readWkt("POLYGON((0 0,10 0,10 0,10 10,0 10,0 0))"));
+  char *reason;
+  sfcgal_geometry_t *location;
+  int result = sfcgal_geometry_is_valid_detail(g.get(), &reason, &location);
+  // check
+  BOOST_CHECK_EQUAL(true, result);
+  BOOST_CHECK_EQUAL(nullptr, reason);
+  BOOST_CHECK_EQUAL(nullptr, location);
+
+  std::unique_ptr<Geometry> const g2(io::readWkt("POLYGON((1 2,1 2,1 2,1 2))"));
+  result = sfcgal_geometry_is_valid_detail(g2.get(), &reason, &location);
+  // check
+  BOOST_CHECK_EQUAL(false, result);
+  BOOST_CHECK_EQUAL("ring 0 degenerated to a point", reason);
+  BOOST_CHECK_EQUAL(nullptr, location);
+
+  sfcgal_free_buffer(reason);
+  if (location)
+    sfcgal_geometry_delete(location);
+
+  // ========== 3D
+  std::unique_ptr<Geometry> const g3(
+      io::readWkt("TRIANGLE((1.0 -1.0 -1.0,1.0 1.0 -1.0,1.0 -1.0 1.0,1.0 -1.0 -1.0))"));
+  result = sfcgal_geometry_is_valid_detail(g3.get(), &reason, &location);
+  // check
+  BOOST_CHECK_EQUAL(true, result);
+  BOOST_CHECK_EQUAL(nullptr, reason);
+  BOOST_CHECK_EQUAL(nullptr, location);
+
+  std::unique_ptr<Geometry> const g4(
+      io::readWkt("TRIANGLE((1.0 -1.0 -1.0,1.0 1.0 -1.0,1.0 -1.0 -1.0,1.0 -1.0 -1.0))"));
+  result = sfcgal_geometry_is_valid_detail(g4.get(), &reason, &location);
+  // check
+  BOOST_CHECK_EQUAL(false, result);
+  BOOST_CHECK_EQUAL("ring 0 self intersects", reason);
+  BOOST_CHECK_EQUAL(nullptr, location);
+
+  sfcgal_free_buffer(reason);
+  if (location)
+    sfcgal_geometry_delete(location);
+}
+
+BOOST_AUTO_TEST_CASE(testIsMeasured)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  // retrieve wkb from geometry via C++ api
+  std::unique_ptr<Geometry> const g(io::readWkt("POLYGON ((0 0, 20 0, 20 10, 0 10, 0 0))"));
+  // check
+  BOOST_CHECK_EQUAL(false, sfcgal_geometry_is_measured(g.get()));
+
+  std::unique_ptr<Geometry> const g2(
+      io::readWkt("POLYGON Z ((0 0 0, 20 0 0, 20 10 0, 0 10 0, 0 0 0))"));
+  // check
+  BOOST_CHECK_EQUAL(false, sfcgal_geometry_is_measured(g2.get()));
+
+  std::unique_ptr<Geometry> const g3(
+      io::readWkt("POLYGON M ((0 0 1, 20 0 2, 20 10 3, 0 10 4, 0 0 1))"));
+  // check
+  BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_measured(g3.get()));
+}
+
+BOOST_AUTO_TEST_CASE(testIsSimple)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  // retrieve wkb from geometry via C++ api
+  std::unique_ptr<Geometry> const g(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
+  // check
+  BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_simple(g.get()));
+
+  std::unique_ptr<Geometry> const g2(
+      io::readWkt("POLYGON Z ((0.0 0.0 0.0, 1.0 0.0 0.0, 1.0 1.0 0.0, "
+                  "0.0 1.0 0.0, 0.0 0.0 0.0))"));
+  // check
+  BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_simple(g2.get()));
+
+  std::unique_ptr<Geometry> const g3(
+      io::readWkt("POLYGON Z ((0.0 0.0 1.0, 1.0 0.0 0.0, 1.0 1.0 0.0, "
+                  "0.0 1.0 0.0, 0.0 0.0 1.0))"));
+  char *reason;
+  // check
+  BOOST_CHECK_EQUAL(false, sfcgal_geometry_is_simple_detail(g3.get(), &reason));
+  BOOST_CHECK_EQUAL("Points don't lie in the same plane.", reason);
+
+  sfcgal_free_buffer(reason);
+}
+
+BOOST_AUTO_TEST_CASE(testIsEqual)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  {
+    // same wkt
+    std::unique_ptr<Geometry> const g(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
+    std::unique_ptr<Geometry> const g2(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
+    // check
+    hasError = false;
+    BOOST_CHECK_EQUAL(true, sfcgal_geometry_is_equals(g.get(), g2.get()));
+    BOOST_CHECK(hasError == false);
+  }
+
+  {
+    // 0.1 diff between wkt
+    std::unique_ptr<Geometry> const g(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
+    std::unique_ptr<Geometry> const g2(io::readWkt("LINESTRING (0.1 0.1, 2.1 0.1, 1.1 1.1)"));
+    // check
+    hasError = false;
+    BOOST_CHECK_EQUAL( true, sfcgal_geometry_is_almost_equals( g.get(), g2.get(), 0.11 ) );
+    BOOST_CHECK(hasError == false);
+  }
+
+  {
+    // retrieve wkb from geometry via C++ api
+    std::unique_ptr<Geometry> const g(io::readWkt("LINESTRING (0.0 0.0, 2.0 0.0, 1.0 1.0)"));
+    std::unique_ptr<Geometry> const g2(io::readWkt("LINESTRING (0.1 0.1, 2.1 0.1, 1.1 1.1)"));
+    // check
+    hasError = false;
+    BOOST_CHECK_EQUAL( true, sfcgal_geometry_is_almost_equals( g.get(), g2.get(), 0.100008 ) );
+    BOOST_CHECK_EQUAL( false, sfcgal_geometry_is_almost_equals( g.get(), g2.get(), 0.099993 ) );
+    BOOST_CHECK(hasError == false);
+  }
+}
+
 /// Coordinate() ;
 BOOST_AUTO_TEST_CASE(testErrorOnBadGeometryType)
 {
@@ -144,11 +289,8 @@ BOOST_AUTO_TEST_CASE(testApproximateMedialAxis)
   hasError              = false;
   sfcgal_geometry_t *sk = sfcgal_geometry_approximate_medial_axis(g.get());
   BOOST_CHECK(hasError == false);
-  // TODO: check length = 71.5634135885843
-  // NOTE: length not available in C-API
-  // algorithm::length
-  // BOOST_CHECK_EQUAL( 71.56, round(algorithm::length(sk)*100)/100; );
   BOOST_CHECK_EQUAL(11, sfcgal_geometry_collection_num_geometries(sk));
+  BOOST_CHECK_EQUAL(71.56, std::round(sfcgal_geometry_length(sk) * 100.0) / 100.0);
 
   sfcgal_geometry_delete(sk);
 }
@@ -423,6 +565,16 @@ BOOST_AUTO_TEST_CASE(testEnvelope2D)
 
   sfcgal_free_buffer(wkt);
   sfcgal_geometry_delete(result);
+
+  hasError = false;
+  result = sfcgal_geometry_envelope_3d(g.get());
+  BOOST_CHECK(hasError == false);
+
+  sfcgal_geometry_as_text_decim(result, 0, &wkt, &len);
+  BOOST_CHECK_EQUAL(std::string(wkt), "POLYGON ((0 0,30 0,30 15,0 15,0 0))");
+
+  sfcgal_free_buffer(wkt);
+  sfcgal_geometry_delete(result);
 }
 
 BOOST_AUTO_TEST_CASE(testEnvelope3D)
@@ -436,12 +588,7 @@ BOOST_AUTO_TEST_CASE(testEnvelope3D)
   sfcgal_geometry_t *result = sfcgal_geometry_envelope(g.get());
   BOOST_CHECK(hasError == false);
 
-  std::string expected = "POLYHEDRALSURFACE Z (((0 0 -5,0 15 -5,30 15 -5,30 0 -5,0 0 -5)),"
-                         "((0 0 25,30 0 25,30 15 25,0 15 25,0 0 25)),"
-                         "((0 0 -5,30 0 -5,30 0 25,0 0 25,0 0 -5)),"
-                         "((30 15 -5,0 15 -5,0 15 25,30 15 25,30 15 -5)),"
-                         "((30 0 -5,30 15 -5,30 15 25,30 0 25,30 0 -5)),"
-                         "((0 0 -5,0 0 25,0 15 25,0 15 -5,0 0 -5)))";
+  std::string expected = "POLYGON ((0 0,30 0,30 15,0 15,0 0))";
   char *wkt;
   size_t len;
   sfcgal_geometry_as_text_decim(result, 0, &wkt, &len);
@@ -449,6 +596,116 @@ BOOST_AUTO_TEST_CASE(testEnvelope3D)
 
   sfcgal_free_buffer(wkt);
   sfcgal_geometry_delete(result);
+
+  hasError = false;
+  result = sfcgal_geometry_envelope_3d(g.get());
+  BOOST_CHECK(hasError == false);
+
+  expected = "POLYHEDRALSURFACE Z (((0 0 -5,0 15 -5,30 15 -5,30 0 -5,0 0 -5)),"
+             "((0 0 25,30 0 25,30 15 25,0 15 25,0 0 25)),"
+             "((0 0 -5,30 0 -5,30 0 25,0 0 25,0 0 -5)),"
+             "((30 15 -5,0 15 -5,0 15 25,30 15 25,30 15 -5)),"
+             "((30 0 -5,30 15 -5,30 15 25,30 0 25,30 0 -5)),"
+             "((0 0 -5,0 0 25,0 15 25,0 15 -5,0 0 -5)))";
+  sfcgal_geometry_as_text_decim(result, 0, &wkt, &len);
+  BOOST_CHECK_EQUAL(std::string(wkt), expected);
+
+  sfcgal_free_buffer(wkt);
+  sfcgal_geometry_delete(result);
+}
+
+BOOST_AUTO_TEST_CASE(testCentroid)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  std::unique_ptr<Geometry> const g(io::readWkt(
+      "MULTIPOLYGON (((0 0, 20 0, 20 10, 0 10, 0 0)), ((25 5, 30 5, 30 15, 25 15, 25 5)))"));
+
+  hasError = false;
+  sfcgal_geometry_t *result = sfcgal_geometry_centroid(g.get());
+  BOOST_CHECK(hasError == false);
+
+  char *wkt;
+  size_t len;
+  sfcgal_geometry_as_text_decim(result, 0, &wkt, &len);
+  BOOST_CHECK_EQUAL(std::string(wkt), "POINT (18 6)");
+
+  sfcgal_free_buffer(wkt);
+  sfcgal_geometry_delete(result);
+}
+
+BOOST_AUTO_TEST_CASE(testLength2D)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  std::unique_ptr<Geometry> const g(io::readWkt("POLYGON ((0 0,30 0,30 15,0 15,0 0))"));
+  hasError = false;
+  double result = sfcgal_geometry_length(g.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(0.0, result);
+
+  std::unique_ptr<Geometry> const g2(io::readWkt(
+      "MULTIPOLYGON (((0 0, 20 0, 20 10, 0 10, 0 0)), ((25 5, 30 5, 30 15, 25 15, 25 5)))"));
+  hasError = false;
+  result = sfcgal_geometry_length(g2.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(0.0, result);
+
+  std::unique_ptr<Geometry> const g3(io::readWkt("LINESTRING (0 0, 0 3, 4 3)"));
+  hasError = false;
+  result = sfcgal_geometry_length(g3.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(7.0, result);
+
+  std::unique_ptr<Geometry> const g4(
+      io::readWkt("MULTILINESTRING ((0 0, 0 3, 4 3), (10 0, 10 3, 14 3))"));
+  hasError = false;
+  result = sfcgal_geometry_length(g4.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(14.0, result);
+
+  std::unique_ptr<Geometry> const g5(io::readWkt("LINESTRING Z (0 0 0, 0 3 10, 4 3 20)"));
+  hasError = false;
+  result = sfcgal_geometry_length(g5.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(7.0, result);
+}
+
+BOOST_AUTO_TEST_CASE(testLength3D)
+{
+  sfcgal_set_error_handlers(printf, on_error);
+
+  std::unique_ptr<Geometry> const g(io::readWkt("POLYGON ((0 0,30 0,30 15,0 15,0 0))"));
+  hasError = false;
+  double result = sfcgal_geometry_length_3d(g.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(0.0, result);
+
+  std::unique_ptr<Geometry> const g2(io::readWkt(
+      "MULTIPOLYGON (((0 0, 20 0, 20 10, 0 10, 0 0)), ((25 5, 30 5, 30 15, 25 15, 25 5)))"));
+  hasError = false;
+  result = sfcgal_geometry_length_3d(g2.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(0.0, result);
+
+  std::unique_ptr<Geometry> const g3(io::readWkt("LINESTRING (0 0, 0 3, 4 3)"));
+  hasError = false;
+  result = sfcgal_geometry_length(g3.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(7.0, result);
+
+  std::unique_ptr<Geometry> const g4(
+      io::readWkt("MULTILINESTRING ((0 0, 0 3, 4 3), (10 0, 10 3, 14 3))"));
+  hasError = false;
+  result = sfcgal_geometry_length_3d(g4.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(14.0, result);
+
+  std::unique_ptr<Geometry> const g5(io::readWkt("LINESTRING Z (0 0 0, 0 3 10, 4 3 20)"));
+  hasError = false;
+  result = sfcgal_geometry_length_3d(g5.get());
+  BOOST_CHECK(hasError == false);
+  BOOST_CHECK_EQUAL(21.2106, std::round(result * 10000.0) / 10000.0);
 }
 
 BOOST_AUTO_TEST_CASE(testRotate3DAroundCenter)

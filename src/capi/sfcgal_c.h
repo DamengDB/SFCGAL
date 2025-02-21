@@ -103,6 +103,15 @@ sfcgal_geometry_is_valid_detail(const sfcgal_geometry_t *geom,
                                 sfcgal_geometry_t      **invalidity_location);
 
 /**
+ * @deprecated Same as sfcgal_geometry_is_valid_detail
+ * @ingroup capi
+ */
+SFCGAL_API int
+sfcgal_geometry_is_complexity_detail(const sfcgal_geometry_t *geom,
+                                     char                   **invalidity_reason,
+                                     sfcgal_geometry_t **invalidity_location);
+
+/**
  * Tests if the given geometry is simple or not
  * @ingroup capi
  */
@@ -119,8 +128,8 @@ sfcgal_geometry_is_simple(const sfcgal_geometry_t *);
  * @ingroup capi
  */
 SFCGAL_API int
-sfcgal_geometry_is_complexity_detail(const sfcgal_geometry_t *geom,
-                                     char **complexity_reason);
+sfcgal_geometry_is_simple_detail(const sfcgal_geometry_t *geom,
+                                 char                   **complexity_reason);
 
 /**
  * Tests if the given geometry is 3D or not
@@ -1204,6 +1213,68 @@ sfcgal_geometry_alpha_wrapping_3d(const sfcgal_geometry_t *geom,
  */
 SFCGAL_API sfcgal_geometry_t *
 sfcgal_geometry_envelope(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns the 3d envelope of geom
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API sfcgal_geometry_t *
+sfcgal_geometry_envelope_3d(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns the 2D length of geom
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API double
+sfcgal_geometry_length(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns the 3D length of geom
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API double
+sfcgal_geometry_length_3d(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns true if geom1 is equals to geom2.
+ *
+ * For each point of geom1 there is a point in geom2.
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API int
+sfcgal_geometry_is_equals(const sfcgal_geometry_t *geom1,
+                          const sfcgal_geometry_t *geom2);
+
+/**
+ * Returns true if geom1 is almost equals to geom2.
+ *
+ * For each point of geom1 there is a point in geom2 within tolerance distance.
+ * @param tolerance 0 by default
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API int
+sfcgal_geometry_is_almost_equals(const sfcgal_geometry_t *geom1,
+                                 const sfcgal_geometry_t *geom2,
+                                 double                   tolerance = 0.0);
+
+/**
+ * Returns a Point representing the geometry centroid
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+SFCGAL_API sfcgal_geometry_t *
+sfcgal_geometry_centroid(const sfcgal_geometry_t *geom);
 
 /**
  * Returns the y monotone partition of a geometry (polygon without hole)

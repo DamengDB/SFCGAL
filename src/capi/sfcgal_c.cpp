@@ -33,6 +33,7 @@
 #include "SFCGAL/algorithm/alphaWrapping3D.h"
 #include "SFCGAL/algorithm/area.h"
 #include "SFCGAL/algorithm/buffer3D.h"
+#include "SFCGAL/algorithm/centroid.h"
 #include "SFCGAL/algorithm/convexHull.h"
 #include "SFCGAL/algorithm/covers.h"
 #include "SFCGAL/algorithm/difference.h"
@@ -43,6 +44,7 @@
 #include "SFCGAL/algorithm/intersects.h"
 #include "SFCGAL/algorithm/isSimple.h"
 #include "SFCGAL/algorithm/isValid.h"
+#include "SFCGAL/algorithm/length.h"
 #include "SFCGAL/algorithm/lineSubstring.h"
 #include "SFCGAL/algorithm/minkowskiSum.h"
 #include "SFCGAL/algorithm/offset.h"
@@ -171,6 +173,8 @@ sfcgal_full_version() -> const char *
 extern "C" void
 sfcgal_set_geometry_validation(int /*enabled*/)
 {
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      BOOST_THROW_EXCEPTION(SFCGAL::Exception("Not implemented")););
 }
 
 extern "C" auto
@@ -193,6 +197,17 @@ sfcgal_geometry_is_valid(const sfcgal_geometry_t *geom) -> int
   SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
       return (int)bool(SFCGAL::algorithm::isValid(
           *reinterpret_cast<const SFCGAL::Geometry *>(geom)));)
+}
+
+// deprecated!
+extern "C" auto
+sfcgal_geometry_is_complexity_detail(const sfcgal_geometry_t *geom,
+                                     char                   **invalidity_reason,
+                                     sfcgal_geometry_t **invalidity_location)
+    -> int
+{
+  return sfcgal_geometry_is_valid_detail(geom, invalidity_reason,
+                                         invalidity_location);
 }
 
 extern "C" auto
@@ -1874,7 +1889,111 @@ sfcgal_geometry_envelope(const sfcgal_geometry_t *geom) -> sfcgal_geometry_t *
     return nullptr;
   }
 
-  if (geometry->is3D())
-    return result.toShell().release();
   return result.toPolygon().release();
+}
+
+extern "C" auto
+sfcgal_geometry_envelope_3d(const sfcgal_geometry_t *geom)
+    -> sfcgal_geometry_t *
+{
+  const auto      *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  SFCGAL::Envelope result;
+
+  try {
+    result = geometry->envelope();
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During envelope_3d(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return nullptr;
+  }
+
+  if (result.is3D())
+    return result.toShell().release();
+
+  return result.toPolygon().release();
+}
+
+extern "C" auto
+sfcgal_geometry_length(const sfcgal_geometry_t *geom) -> double
+{
+  const auto *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  double      result;
+
+  try {
+    result = SFCGAL::algorithm::length(*geometry);
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During length(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return result;
+}
+
+extern "C" auto
+sfcgal_geometry_length_3d(const sfcgal_geometry_t *geom) -> double
+{
+  const auto *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  double      result;
+
+  try {
+    result = SFCGAL::algorithm::length3D(*geometry);
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During length(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return result;
+}
+
+extern "C" auto
+sfcgal_geometry_is_equals(const sfcgal_geometry_t *ga,
+                          const sfcgal_geometry_t *gb) -> int
+{
+  return sfcgal_geometry_is_almost_equals(ga, gb, 0.0);
+}
+
+extern "C" auto
+sfcgal_geometry_is_almost_equals(const sfcgal_geometry_t *ga,
+                                 const sfcgal_geometry_t *gb, double tolerance)
+    -> int
+{
+  const auto *g1 = reinterpret_cast<const SFCGAL::Geometry *>(ga);
+  const auto *g2 = reinterpret_cast<const SFCGAL::Geometry *>(gb);
+
+  bool result;
+  try {
+    result = g1->almostEqual(*g2, tolerance);
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During is_almost_equals(A, B, %g):", tolerance);
+    SFCGAL_WARNING("  with A: %s", g1->asText().c_str());
+    SFCGAL_WARNING("  with B: %s", g2->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    result = false;
+  }
+
+  return static_cast<int>(result);
+}
+
+extern "C" auto
+sfcgal_geometry_centroid(const sfcgal_geometry_t *geom) -> sfcgal_geometry_t *
+{
+  const auto *geometry = reinterpret_cast<const SFCGAL::Geometry *>(geom);
+  std::unique_ptr<SFCGAL::Point> result;
+
+  try {
+    result = SFCGAL::algorithm::centroid(*geometry);
+  } catch (std::exception &e) {
+    SFCGAL_WARNING("During centroid(A):");
+    SFCGAL_WARNING("  with A: %s", geometry->asText().c_str());
+    SFCGAL_ERROR("%s", e.what());
+    return nullptr;
+  }
+
+  std::unique_ptr<SFCGAL::Geometry> out(result->clone());
+  return out.release();
 }
