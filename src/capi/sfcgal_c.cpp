@@ -172,6 +172,8 @@ sfcgal_full_version() -> const char *
 extern "C" void
 sfcgal_set_geometry_validation(int /*enabled*/)
 {
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      BOOST_THROW_EXCEPTION(SFCGAL::Exception("Not implemented")););
 }
 
 extern "C" auto
@@ -194,6 +196,17 @@ sfcgal_geometry_is_valid(const sfcgal_geometry_t *geom) -> int
   SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
       return (int)bool(SFCGAL::algorithm::isValid(
           *reinterpret_cast<const SFCGAL::Geometry *>(geom)));)
+}
+
+// deprecated!
+extern "C" auto
+sfcgal_geometry_is_complexity_detail(const sfcgal_geometry_t *geom,
+                                     char                   **invalidity_reason,
+                                     sfcgal_geometry_t **invalidity_location)
+    -> int
+{
+  return sfcgal_geometry_is_valid_detail(geom, invalidity_reason,
+                                         invalidity_location);
 }
 
 extern "C" auto
