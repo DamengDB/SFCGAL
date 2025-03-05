@@ -327,6 +327,18 @@ public:
   {
   }
 
+  /**
+   * @brief Computes centroid of this geometry
+   */
+  Point
+  centroid() const;
+
+  /**
+   * @brief Computes 3D centroid of this geometry
+   */
+  Point
+  centroid3D() const;
+
 protected:
   bool validityFlag_ = false;
 };
