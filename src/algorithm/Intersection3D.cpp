@@ -21,6 +21,12 @@ using namespace SFCGAL::detail;
 
 namespace SFCGAL::algorithm {
 
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
+
 void
 _intersection_solid_segment(const PrimitiveHandle<3> &pa,
                             const PrimitiveHandle<3> &pb,
@@ -206,8 +212,14 @@ _intersection_solid_solid(const MarkedPolyhedron &pa,
   }
 }
 
-//
-// must be called with pa's dimension larger than pb's
+/// @} end of private section
+
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
+
+/// must be called with pa's dimension larger than pb's
 void
 intersection(const PrimitiveHandle<3> &pa, const PrimitiveHandle<3> &pb,
              GeometrySet<3> &output, dim_t<3> /*unused*/)

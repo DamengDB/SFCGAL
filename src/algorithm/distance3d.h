@@ -5,9 +5,9 @@
 #ifndef SFCGAL_ALGORITHM_DISTANCE3D_H_
 #define SFCGAL_ALGORITHM_DISTANCE3D_H_
 
-#include "SFCGAL/config.h"
-
 #include "SFCGAL/Geometry.h"
+#include "SFCGAL/Kernel.h"
+#include "SFCGAL/config.h"
 
 namespace SFCGAL {
 namespace algorithm {
@@ -17,7 +17,6 @@ struct NoValidityCheck;
  * dispatch distance between two Geometries
  * @todo complete with solid
  * Compute distance between two 3D Geometries
- * @ingroup public_api
  * @pre gA is a valid geometry
  * @pre gB is a valid geometry
  */
@@ -26,7 +25,6 @@ distance3D(const Geometry &gA, const Geometry &gB);
 
 /**
  * Compute distance between two 3D Geometries
- * @ingroup detail
  * @pre gA is a valid geometry
  * @pre gB is a valid geometry
  * @warning No actual validity check is done

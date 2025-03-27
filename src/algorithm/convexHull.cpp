@@ -25,16 +25,6 @@
 
 namespace SFCGAL::algorithm {
 
-using Point_3      = CGAL::Point_3<Kernel>;
-using Segment_3    = CGAL::Segment_3<Kernel>;
-using Triangle_3   = CGAL::Triangle_3<Kernel>;
-using Polyhedron_3 = CGAL::Polyhedron_3<Kernel>;
-
-using Point_2 = CGAL::Point_2<Kernel>;
-
-///
-///
-///
 auto
 convexHull(const Geometry &g) -> std::unique_ptr<Geometry>
 {
@@ -96,9 +86,6 @@ convexHull(const Geometry &g) -> std::unique_ptr<Geometry>
       Exception("unexpected CGAL output type in CGAL::convex_hull_2"));
 }
 
-///
-///
-///
 auto
 convexHull3D(const Geometry &g) -> std::unique_ptr<Geometry>
 {

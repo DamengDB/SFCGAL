@@ -24,9 +24,11 @@
 #include <CGAL/minkowski_sum_2.h>
 #include <CGAL/offset_polygon_2.h>
 
-using Polygon_2            = CGAL::Polygon_2<SFCGAL::Kernel>;
-using Polygon_with_holes_2 = CGAL::Polygon_with_holes_2<SFCGAL::Kernel>;
-using Polygon_set_2        = CGAL::Polygon_set_2<SFCGAL::Kernel>;
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
 
 using Gps_traits_2   = CGAL::Gps_circle_segment_traits_2<SFCGAL::Kernel>;
 using Offset_curve_2 = Gps_traits_2::Curve_2;
@@ -41,8 +43,6 @@ using Offset_polygon_set_2        = CGAL::General_polygon_set_2<Gps_traits_2>;
   if (!std::isfinite(r))                                                       \
     BOOST_THROW_EXCEPTION(NonFiniteValueException("radius is non finite"));
 namespace SFCGAL::algorithm {
-
-//-- private interface
 
 /**
  * @brief dispatch a geometry
@@ -233,9 +233,6 @@ offset(const LineString &lineString, const double &radius,
   }
 }
 
-///
-///
-///
 void
 offset(const Polygon &g, const double &radius, Offset_polygon_set_2 &polygonSet)
 {
@@ -290,9 +287,6 @@ offset(const Polygon &g, const double &radius, Offset_polygon_set_2 &polygonSet)
   }
 }
 
-///
-///
-///
 void
 offsetCollection(const Geometry &g, const double &radius,
                  Offset_polygon_set_2 &polygonSet)
@@ -304,9 +298,6 @@ offsetCollection(const Geometry &g, const double &radius,
   }
 }
 
-///
-///
-///
 void
 offset(const Geometry &g, const double &radius,
        Offset_polygon_set_2 &polygonSet)
@@ -344,11 +335,13 @@ offset(const Geometry &g, const double &radius,
   }
 }
 
-//-- public interface
+/// @} end of private section
 
-///
-///
-///
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
+
 auto
 offset(const Geometry &g, const double &r, NoValidityCheck /*unused*/)
     -> std::unique_ptr<MultiPolygon>

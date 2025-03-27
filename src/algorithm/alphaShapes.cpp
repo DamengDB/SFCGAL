@@ -28,12 +28,16 @@
 
 namespace SFCGAL::algorithm {
 
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
+
 using Vb              = CGAL::Alpha_shape_vertex_base_2<Kernel>;
 using Fb              = CGAL::Alpha_shape_face_base_2<Kernel>;
 using Tds             = CGAL::Triangulation_data_structure_2<Vb, Fb>;
 using Triangulation_2 = CGAL::Delaunay_triangulation_2<Kernel, Tds>;
-using Point_2         = CGAL::Point_2<Kernel>;
-using Segment_2       = CGAL::Segment_2<Kernel>;
 using Alpha_shape_2   = CGAL::Alpha_shape_2<Triangulation_2>;
 
 using Alpha_shape_edges_iterator = Alpha_shape_2::Alpha_shape_edges_iterator;
@@ -124,6 +128,13 @@ alpha_to_geometry(const Alpha_shape_2 &A, bool allow_holes)
 
   return result;
 }
+
+/// @} end of private section
+
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
 
 auto
 optimal_alpha_shapes(const Geometry &g, bool allow_holes, size_t nb_components)

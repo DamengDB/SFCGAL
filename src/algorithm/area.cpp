@@ -28,18 +28,6 @@
 #include <boost/format.hpp>
 
 namespace SFCGAL::algorithm {
-
-using Point_2    = CGAL::Point_2<SFCGAL::Kernel>;
-using Triangle_2 = CGAL::Triangle_2<SFCGAL::Kernel>;
-using Polygon_2  = CGAL::Polygon_2<SFCGAL::Kernel>;
-
-using Point_3    = CGAL::Point_3<SFCGAL::Kernel>;
-using Triangle_3 = CGAL::Triangle_3<SFCGAL::Kernel>;
-using Plane_3    = CGAL::Plane_3<SFCGAL::Kernel>;
-
-///
-///
-///
 auto
 area(const Geometry &g, NoValidityCheck /*unused*/) -> double
 {
@@ -85,9 +73,6 @@ area(const Geometry &g) -> double
   return area(g, NoValidityCheck());
 }
 
-///
-///
-///
 auto
 signedArea(const Triangle &g) -> Kernel::FT
 {
@@ -95,27 +80,18 @@ signedArea(const Triangle &g) -> Kernel::FT
   return triangle.area();
 }
 
-///
-///
-///
 auto
 signedArea(const LineString &g) -> Kernel::FT
 {
   return g.toPolygon_2(false).area();
 }
 
-///
-///
-///
 auto
 area(const Triangle &g) -> double
 {
   return CGAL::to_double(CGAL::abs(signedArea(g)));
 }
 
-///
-///
-///
 auto
 area(const Polygon &g) -> double
 {
@@ -136,9 +112,6 @@ area(const Polygon &g) -> double
   return CGAL::to_double(result);
 }
 
-///
-///
-///
 auto
 area(const GeometryCollection &g) -> double
 {
@@ -151,9 +124,6 @@ area(const GeometryCollection &g) -> double
   return result;
 }
 
-///
-///
-///
 auto
 area(const TriangulatedSurface &g) -> double
 {
@@ -166,9 +136,6 @@ area(const TriangulatedSurface &g) -> double
   return result;
 }
 
-///
-///
-///
 auto
 area(const PolyhedralSurface &g) -> double
 {
@@ -181,13 +148,10 @@ area(const PolyhedralSurface &g) -> double
   return result;
 }
 
-///----------------------------------------------------------------------------------
-/// -- area3D
-///----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------
+//  -- area3D
+// ----------------------------------------------------------------------------------
 
-///
-///
-///
 auto
 area3D(const Geometry &g, NoValidityCheck /*unused*/) -> double
 {
@@ -228,9 +192,7 @@ area3D(const Geometry &g) -> double
   SFCGAL_ASSERT_GEOMETRY_VALIDITY_3D(g);
   return area3D(g, NoValidityCheck());
 }
-///
-///
-///
+
 auto
 area3D(const Polygon &g) -> double
 {
@@ -285,9 +247,6 @@ area3D(const Polygon &g) -> double
   return result;
 }
 
-///
-///
-///
 auto
 area3D(const Triangle &g) -> double
 {
@@ -297,9 +256,6 @@ area3D(const Triangle &g) -> double
   return sqrt(CGAL::to_double(triangle.squared_area()));
 }
 
-///
-///
-///
 auto
 area3D(const GeometryCollection &g) -> double
 {
@@ -312,9 +268,6 @@ area3D(const GeometryCollection &g) -> double
   return result;
 }
 
-///
-///
-///
 auto
 area3D(const PolyhedralSurface &g) -> double
 {
@@ -327,9 +280,6 @@ area3D(const PolyhedralSurface &g) -> double
   return area;
 }
 
-///
-///
-///
 auto
 area3D(const TriangulatedSurface &g) -> double
 {

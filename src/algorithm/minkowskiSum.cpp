@@ -23,13 +23,13 @@
 
 #include <CGAL/Aff_transformation_2.h>
 
-using Polygon_2            = CGAL::Polygon_2<SFCGAL::Kernel>;
-using Polygon_with_holes_2 = CGAL::Polygon_with_holes_2<SFCGAL::Kernel>;
-using Polygon_set_2        = CGAL::Polygon_set_2<SFCGAL::Kernel>;
-
 namespace SFCGAL::algorithm {
 
-//-- private interface
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
 
 /**
  * dispatch gA+gB sum
@@ -67,9 +67,6 @@ minkowskiSumCollection(const Geometry &gA, const Polygon_2 &gB,
 
 //-- private interface implementation
 
-///
-///
-///
 void
 minkowskiSum(const Geometry &gA, const Polygon_2 &gB,
              CGAL::Polygon_set_2<Kernel> &polygonSet)
@@ -138,9 +135,6 @@ minkowskiSum(const Point &gA, const Polygon_2 &gB, Polygon_set_2 &polygonSet)
   }
 }
 
-///
-///
-///
 void
 minkowskiSum(const LineString &gA, const Polygon_2 &gB,
              Polygon_set_2 &polygonSet)
@@ -177,9 +171,6 @@ minkowskiSum(const LineString &gA, const Polygon_2 &gB,
   }
 }
 
-///
-///
-///
 void
 minkowskiSum(const Polygon &gA, const Polygon_2 &gB, Polygon_set_2 &polygonSet)
 {
@@ -232,9 +223,6 @@ minkowskiSum(const Polygon &gA, const Polygon_2 &gB, Polygon_set_2 &polygonSet)
   }
 }
 
-///
-///
-///
 void
 minkowskiSum(const Solid &gA, const Polygon_2 &gB, Polygon_set_2 &polygonSet)
 {
@@ -242,9 +230,6 @@ minkowskiSum(const Solid &gA, const Polygon_2 &gB, Polygon_set_2 &polygonSet)
   minkowskiSumCollection(gA.exteriorShell(), gB, polygonSet);
 }
 
-///
-///
-///
 void
 minkowskiSumCollection(const Geometry &gA, const Polygon_2 &gB,
                        Polygon_set_2 &polygonSet)
@@ -253,6 +238,13 @@ minkowskiSumCollection(const Geometry &gA, const Polygon_2 &gB,
     minkowskiSum(gA.geometryN(i), gB, polygonSet);
   }
 }
+
+/// @} end of private section
+
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
 
 auto
 minkowskiSum(const Geometry &gA, const Polygon &gB, NoValidityCheck /*unused*/)
@@ -268,11 +260,6 @@ minkowskiSum(const Geometry &gA, const Polygon &gB, NoValidityCheck /*unused*/)
       detail::polygonSetToMultiPolygon(polygonSet).release());
 }
 
-//-- public interface implementation
-
-///
-///
-///
 auto
 minkowskiSum(const Geometry &gA, const Polygon &gB) -> std::unique_ptr<Geometry>
 {

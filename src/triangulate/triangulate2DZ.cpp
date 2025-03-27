@@ -16,17 +16,17 @@ namespace SFCGAL::triangulate {
 
 using Vertex_handle = ConstraintDelaunayTriangulation::Vertex_handle;
 
-///
-///
-///
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
+
 void
 triangulate2DZ(const Point &g, ConstraintDelaunayTriangulation &triangulation)
 {
   triangulation.addVertex(g.coordinate());
 }
-///
-///
-///
 void
 triangulate2DZ(const LineString                &g,
                ConstraintDelaunayTriangulation &triangulation)
@@ -44,9 +44,6 @@ triangulate2DZ(const LineString                &g,
     last = vertex;
   }
 }
-///
-///
-///
 void
 triangulate2DZ(const Polygon &g, ConstraintDelaunayTriangulation &triangulation)
 {
@@ -54,9 +51,6 @@ triangulate2DZ(const Polygon &g, ConstraintDelaunayTriangulation &triangulation)
     triangulate2DZ(g.ringN(i), triangulation);
   }
 }
-///
-///
-///
 void
 triangulate2DZ(const Triangle                  &g,
                ConstraintDelaunayTriangulation &triangulation)
@@ -74,9 +68,14 @@ triangulate2DZ(const Triangle                  &g,
     last = vertex;
   }
 }
-///
-///
-///
+
+/// @} end of private section
+
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
+
 void
 triangulateCollection2DZ(const Geometry                  &g,
                          ConstraintDelaunayTriangulation &triangulation)
@@ -86,9 +85,6 @@ triangulateCollection2DZ(const Geometry                  &g,
   }
 }
 
-///
-///
-///
 void
 triangulate2DZ(const Geometry                  &g,
                ConstraintDelaunayTriangulation &triangulation)
@@ -141,9 +137,6 @@ triangulate2DZ(const Geometry                  &g,
   }
 }
 
-///
-///
-///
 auto
 triangulate2DZ(const Geometry &g) -> ConstraintDelaunayTriangulation
 {

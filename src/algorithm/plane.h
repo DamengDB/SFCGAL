@@ -19,15 +19,13 @@ namespace algorithm {
 
 /**
  * @brief Test if a 3D plane can be extracted from a Polygon
- * @ingroup public_api
+ * @ingroup detail
  */
 template <typename Kernel>
 bool
 hasPlane3D(const Polygon &polygon, CGAL::Point_3<Kernel> &a,
            CGAL::Point_3<Kernel> &b, CGAL::Point_3<Kernel> &c)
 {
-  typedef CGAL::Point_3<Kernel> Point_3;
-
   const LineString &exteriorRing = polygon.exteriorRing();
 
   /*
@@ -86,6 +84,7 @@ plane3D(const Polygon &polygon, CGAL::Point_3<Kernel> &a,
 /**
  * Returns the oriented 3D plane of a polygon (supposed to be planar).
  * May return degenerate plane.
+ * @ingroup detail
  */
 template <typename Kernel>
 CGAL::Plane_3<Kernel>
@@ -104,6 +103,7 @@ struct Plane3DInexactUnsafe {};
  * version.
  * @warning Will divide by zero if polygon is degenerate.
  * @warning result is rounded to double (avoid huge expression tree).
+ * @ingroup detail
  */
 template <typename Kernel>
 CGAL::Plane_3<Kernel>

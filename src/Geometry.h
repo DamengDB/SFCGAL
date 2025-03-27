@@ -20,7 +20,15 @@ namespace CGAL {
 class Object;
 }
 
+/**
+ * SRID type
+ */
+typedef uint32_t srid_t;
+
 namespace SFCGAL {
+
+/// @{
+/// @privatesection
 class Geometry;
 class Point;
 class LineString;
@@ -43,13 +51,11 @@ class Envelope;
 
 class GeometryVisitor;
 class ConstGeometryVisitor;
-} // namespace SFCGAL
-
-namespace SFCGAL {
 
 const uint32_t wkbSRID = 0x20000000;
 const uint32_t wkbM    = 0x40000000;
 const uint32_t wkbZ    = 0x80000000;
+/// @} end of private section
 
 /**
  * [OGC/SFA]8.2.3 "A common list of codes for geometric types"
@@ -57,8 +63,6 @@ const uint32_t wkbZ    = 0x80000000;
  * @todo solid and triangles as non OGC/SFA geometric types?
  * @warning codes for abstract classes and unimplemented classes are hidden
  * @warning code values have are important for WKB
- *
- * @ingroup public_api
  */
 enum GeometryType {
   //      TYPE_GEOMETRY            = 0, //abstract
@@ -88,7 +92,6 @@ enum GeometryType {
 /**
  * @brief coordinate types (XY, XYZ, XYM, etc.)
  * @see SFA 2.8.3 LineStringZ = 1003 ( coordinateType + geometryType)
- * @ingroup public_api
  */
 typedef enum {
   COORDINATE_XY   = 0,
@@ -99,8 +102,6 @@ typedef enum {
 
 /**
  * @brief OGC/SFA based Geometry abstract class
- *
- * @ingroup public_api
  */
 class SFCGAL_API Geometry {
 public:
@@ -306,20 +307,17 @@ public:
 
   /**
    * @brief [visitor]dispatch visitor
-   * @ingroup detail
    */
   virtual void
   accept(GeometryVisitor &visitor) = 0;
   /**
    * @brief [visitor]dispatch visitor
-   * @ingroup detail
    */
   virtual void
   accept(ConstGeometryVisitor &visitor) const = 0;
 
   /**
    * Serializer
-   * @ingroup detail
    */
   template <class Archive>
   void

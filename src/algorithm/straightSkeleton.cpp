@@ -33,13 +33,13 @@
 
 namespace SFCGAL::algorithm {
 
-using Point_2              = Kernel::Point_2;
-using Point_3              = Kernel::Point_3;
-using Polygon_2            = CGAL::Polygon_2<Kernel>;
-using Polygon_with_holes_2 = CGAL::Polygon_with_holes_2<Kernel>;
-using Straight_skeleton_2  = CGAL::Straight_skeleton_2<Kernel>;
-using Mesh                 = CGAL::Surface_mesh<Point_3>;
-using Segment_2            = Kernel::Segment_2;
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
+
+using Straight_skeleton_2 = CGAL::Straight_skeleton_2<Kernel>;
 using Arrangement_2 = CGAL::Arrangement_2<CGAL::Arr_segment_traits_2<Kernel>>;
 
 #if CGAL_VERSION_MAJOR < 6
@@ -276,9 +276,13 @@ extractPolygons(const Geometry &g, std::vector<Polygon> &vect)
 
 } // namespace
 
-///
-///
-///
+/// @} end of private section
+
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
+
 auto
 straightSkeleton(const Geometry &g, bool          autoOrientation,
                  NoValidityCheck /*unused*/, bool innerOnly,
@@ -315,9 +319,6 @@ straightSkeleton(const Geometry &g, bool autoOrientation, bool innerOnly,
   propagateValidityFlag(*result, true);
   return result;
 }
-///
-///
-///
 auto
 straightSkeleton(const Polygon &g, bool /*autoOrientation*/, bool innerOnly,
                  bool outputDistanceInM, const double &toleranceAbs)
@@ -347,9 +348,6 @@ straightSkeleton(const Polygon &g, bool /*autoOrientation*/, bool innerOnly,
   return result;
 }
 
-///
-///
-///
 auto
 straightSkeleton(const MultiPolygon &g, bool /*autoOrientation*/,
                  bool innerOnly, bool outputDistanceInM,
@@ -410,8 +408,7 @@ auto
 extrudeStraightSkeleton(const Polygon &g, double height)
     -> std::unique_ptr<PolyhedralSurface>
 {
-
-  Mesh sm;
+  Surface_mesh_3 sm;
   CGAL::extrude_skeleton(g.toPolygon_with_holes_2(), sm,
                          CGAL::parameters::maximum_height(height));
   std::unique_ptr<PolyhedralSurface> polys(new PolyhedralSurface(sm));

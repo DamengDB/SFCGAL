@@ -18,6 +18,12 @@ using namespace SFCGAL::detail;
 
 namespace SFCGAL::algorithm {
 
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
+
 // local function : get the number of intersection points between rings of a
 // polygon
 auto
@@ -50,8 +56,14 @@ numIntersectionPoints(const CGAL::Polygon_with_holes_2<Kernel> &poly) -> int
   return numIntersectionPoints;
 }
 
-//
-// must be called with pa's dimension larger than pb's
+/// @} end of private section
+
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
+
+/// must be called with pa's dimension larger than pb's
 void
 intersection(const PrimitiveHandle<2> &pa, const PrimitiveHandle<2> &pb,
              GeometrySet<2> &output, dim_t<2> /*unused*/)

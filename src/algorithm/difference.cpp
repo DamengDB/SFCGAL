@@ -23,6 +23,12 @@ using namespace SFCGAL::detail;
 
 namespace SFCGAL::algorithm {
 
+// ----------------------------------------------------------------------------------
+// -- private interface
+// ----------------------------------------------------------------------------------
+/// @{
+/// @privatesection
+
 template <int Dim>
 struct CollisionMapper {
   using PrimitiveHandleSet = std::vector<PrimitiveHandle<Dim> *>;
@@ -54,7 +60,7 @@ difference(const Point_2 &primitive, const PrimitiveHandle<2> &pb,
     break;
 
   case PrimitiveSurface:
-    difference(primitive, *pb.as<PolygonWH_2>(), out);
+    difference(primitive, *pb.as<Polygon_with_holes_2>(), out);
     break;
   }
 
@@ -76,7 +82,7 @@ difference(const Segment_2 &primitive, const PrimitiveHandle<2> &pb,
     break;
 
   case PrimitiveSurface:
-    difference(primitive, *pb.as<PolygonWH_2>(), out);
+    difference(primitive, *pb.as<Polygon_with_holes_2>(), out);
     break;
   }
 
@@ -85,7 +91,7 @@ difference(const Segment_2 &primitive, const PrimitiveHandle<2> &pb,
 
 template <typename OutputIteratorType>
 auto
-difference(const PolygonWH_2 &primitive, const PrimitiveHandle<2> &pb,
+difference(const Polygon_with_holes_2 &primitive, const PrimitiveHandle<2> &pb,
            OutputIteratorType out) -> OutputIteratorType
 {
   switch (pb.handle.which()) {
@@ -98,7 +104,7 @@ difference(const PolygonWH_2 &primitive, const PrimitiveHandle<2> &pb,
     break;
 
   case PrimitiveSurface:
-    difference(primitive, *pb.as<PolygonWH_2>(), out);
+    difference(primitive, *pb.as<Polygon_with_holes_2>(), out);
     break;
   }
 
@@ -230,8 +236,7 @@ difference(const Primitive &primitive, PrimitiveHandleConstIterator begin,
   return primitives;
 }
 
-// just performs the type switch for the primitive to substract from
-//
+/// just performs the type switch for the primitive to substract from
 void
 appendDifference(const PrimitiveHandle<2>                              &pa,
                  CollisionMapper<2>::PrimitiveHandleSet::const_iterator begin,
@@ -252,8 +257,8 @@ appendDifference(const PrimitiveHandle<2>                              &pa,
   }
 
   case PrimitiveSurface: {
-    std::vector<PolygonWH_2> res =
-        difference(*pa.as<PolygonWH_2>(), begin, end);
+    std::vector<Polygon_with_holes_2> res =
+        difference(*pa.as<Polygon_with_holes_2>(), begin, end);
     output.addSurfaces(res.begin(), res.end());
     return;
   }
@@ -303,8 +308,8 @@ post_difference(const GeometrySet<2> &input, GeometrySet<2> &output)
   //
   // reverse orientation of polygons if needed
   for (const auto &it : input.surfaces()) {
-    const PolygonWH_2 &p     = it.primitive();
-    Polygon_2          outer = p.outer_boundary();
+    const Polygon_with_holes_2 &p     = it.primitive();
+    Polygon_2                   outer = p.outer_boundary();
 
     if (outer.orientation() == CGAL::CLOCKWISE) {
       outer.reverse_orientation();
@@ -321,7 +326,7 @@ post_difference(const GeometrySet<2> &input, GeometrySet<2> &output)
     }
 
     output.surfaces().emplace_back(
-        PolygonWH_2(outer, rings.begin(), rings.end()));
+        Polygon_with_holes_2(outer, rings.begin(), rings.end()));
   }
 
   output.points()   = input.points();
@@ -393,6 +398,13 @@ difference<2>(const GeometrySet<2> &a, const GeometrySet<2> &b,
 template void
 difference<3>(const GeometrySet<3> &a, const GeometrySet<3> &b,
               GeometrySet<3> &);
+
+/// @} end of private section
+
+// ----------------------------------------------------------------------------------
+// -- public interface
+// ----------------------------------------------------------------------------------
+/// @publicsection
 
 auto
 difference(const Geometry &ga, const Geometry &gb, NoValidityCheck /*unused*/)
