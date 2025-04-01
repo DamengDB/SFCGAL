@@ -1,26 +1,19 @@
 build:debian-docker-image:
-  stage: build
+  stage: docker
   rules:
     # on default branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: always
-      changes:
-        - "**/*.{c,h,cpp,hpp}"
-        - "**/CMakeLists.txt"
-        - "docker/*"
     # on a tag
     - if: $CI_COMMIT_TAG
       when: always
-      changes:
-        - "**/*.{c,h,cpp,hpp}"
-        - "**/CMakeLists.txt"
-        - "docker/*"
     # on a MR if previous jobs are successful
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       when: manual
   image: docker:latest
   services:
     - name: docker:dind
+  needs: []
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
@@ -37,7 +30,7 @@ build:debian-docker-image:
     - docker logout $CI_REGISTRY
 
 push:debian-docker-latest:
-  stage: deploy
+  stage: docker
   rules:
     # on default branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -58,7 +51,7 @@ push:debian-docker-latest:
     - docker logout $CI_REGISTRY
 
 push:debian-docker-tag:
-  stage: deploy
+  stage: docker
   rules:
     # on a tag
     - if: $CI_COMMIT_TAG

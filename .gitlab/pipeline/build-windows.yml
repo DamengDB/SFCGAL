@@ -1,26 +1,19 @@
 build:windows-docker-image:
-  stage: build
+  stage: docker
   tags:
     - saas-windows-medium-amd64
   rules:
     # on default branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: always
-      changes:
-        - "**/*.{c,h,cpp,hpp}"
-        - "**/CMakeLists.txt"
-        - "docker/*"
     # on a tag
     - if: $CI_COMMIT_TAG
       when: always
-      changes:
-        - "**/*.{c,h,cpp,hpp}"
-        - "**/CMakeLists.txt"
-        - "docker/*"
     # on a MR if previous jobs are successful
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       when: manual
       allow_failure: true
+  needs: []
   before_script:
     - Start-Service -Name "docker"
     - docker login -u $env:CI_REGISTRY_USER -p $env:CI_REGISTRY_PASSWORD $env:CI_REGISTRY
@@ -37,7 +30,7 @@ build:windows-docker-image:
     - docker logout $env:CI_REGISTRY
 
 push:windows-docker-latest:
-  stage: deploy
+  stage: docker
   tags:
     - saas-windows-medium-amd64
   rules:
@@ -56,7 +49,7 @@ push:windows-docker-latest:
     - docker logout $env:CI_REGISTRY
 
 push:windows-docker-tag:
-  stage: deploy
+  stage: docker
   tags:
     - saas-windows-medium-amd64
   rules:

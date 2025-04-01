@@ -1,9 +1,10 @@
 stages:
-  - .pre
   - lint
-  - test
-  - build
-  - deploy
+  - test # for sast tests
+  - sonar-build-test
+  - plateform-build-test
+  - doc
+  - docker
   - .post
 
 variables:
