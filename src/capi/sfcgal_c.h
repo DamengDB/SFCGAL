@@ -201,6 +201,39 @@ SFCGAL_API void
 sfcgal_geometry_delete(sfcgal_geometry_t *);
 
 /**
+ * Returns the number of geometries of the given geometry collection
+ * @pre geometry must be a GeometryCollection, a PolyhedralSurface or a
+ * TriangulatedSurface. Otherwise, 1 is returned.  For empty geometries 0 is
+ * returned.
+ * @ingroup capi
+ */
+SFCGAL_API size_t
+sfcgal_geometry_num_geometries(const sfcgal_geometry_t *geometryCollection);
+
+/**
+ * Returns the n-th geometry of the given geometry collection
+ * @pre geometry must be a GeometryCollection, a PolyhedralSurface or a
+ * TriangulatedSurface. Otherwise, the geometry is returned.
+ * @post the returned Geometry is not writable and must not be deallocated by
+ * the caller
+ * @ingroup capi
+ */
+SFCGAL_API const sfcgal_geometry_t *
+sfcgal_geometry_get_geometry_n(const sfcgal_geometry_t *geometryCollection,
+                               size_t                   n);
+
+/**
+ * Sets the n-th geometry of the given geometry collection
+ * @pre geometryCollection must be a GeometryCollection, a PolyhedralSurface or
+ * a TriangulatedSurface. Otherwise, nothing happens. The ownership of the
+ * geometry is taken. The caller is not responsible anymore of its deallocation.
+ * @ingroup capi
+ */
+SFCGAL_API void
+sfcgal_geometry_set_geometry_n(sfcgal_geometry_t *geometryCollection,
+                               sfcgal_geometry_t *geometry, size_t n);
+
+/**
  * Returns a WKT representation of the given geometry using CGAL exact integer
  * fractions as coordinate values
  * @post buffer is returned allocated and must be freed by the caller
@@ -509,8 +542,10 @@ sfcgal_geometry_collection_create();
 /**
  * Returns the number of geometries of a given GeometryCollection
  * @pre collection is a GeometryCollection
+ * @deprecated Use sfcgal_geometry_num_geometries instead
  * @ingroup capi
  */
+SFCGAL_DEPRECATED("Use sfcgal_geometry_num_geometries instead.")
 SFCGAL_API size_t
 sfcgal_geometry_collection_num_geometries(const sfcgal_geometry_t *collection);
 
@@ -520,8 +555,10 @@ sfcgal_geometry_collection_num_geometries(const sfcgal_geometry_t *collection);
  * @pre i >= 0 and i < sfcgal_geometry_collection_num_geometries
  * @post the returned Geometry is not writable and must not be deallocated by
  * the caller
+ * @deprecated Use sfcgal_geometry_get_geometry_n
  * @ingroup capi
  */
+SFCGAL_DEPRECATED("Use sfcgal_geometry_get_geometry_n instead.")
 SFCGAL_API const sfcgal_geometry_t *
 sfcgal_geometry_collection_geometry_n(const sfcgal_geometry_t *collection,
                                       size_t                   i);
@@ -575,8 +612,10 @@ sfcgal_polyhedral_surface_create();
 /**
  * Returns the number of polygons of a given PolyhedralSurface
  * @pre polyhedral must be a PolyhedralSurface
+ * @deprecated Use sfcgal_geometry_num_geometries instead
  * @ingroup capi
  */
+SFCGAL_DEPRECATED("Use sfcgal_geometry_num_geometries instead.")
 SFCGAL_API size_t
 sfcgal_polyhedral_surface_num_polygons(const sfcgal_geometry_t *polyhedral);
 
@@ -586,8 +625,10 @@ sfcgal_polyhedral_surface_num_polygons(const sfcgal_geometry_t *polyhedral);
  * @pre i >= 0 and i < sfcgal_polyhedral_surface_num_polygons(polyhedral)
  * @post the returned Polygon is not writable and must not be deallocated by the
  * caller
+ * @deprecated Use sfcgal_geometry_get_geometry_n instead
  * @ingroup capi
  */
+SFCGAL_DEPRECATED("Use sfcgal_geometry_get_geometry_n instead.")
 SFCGAL_API const sfcgal_geometry_t *
 sfcgal_polyhedral_surface_polygon_n(const sfcgal_geometry_t *polyhedral,
                                     size_t                   i);
@@ -614,8 +655,10 @@ sfcgal_triangulated_surface_create();
 /**
  * Returns the number of triangles of a given TriangulatedSurface
  * @pre tin must be a TriangulatedSurface
+ * @deprecated Use sfcgal_geometry_num_geometries instead
  * @ingroup capi
  */
+SFCGAL_DEPRECATED("Use sfcgal_geometry_num_geometries instead.")
 SFCGAL_API size_t
 sfcgal_triangulated_surface_num_triangles(const sfcgal_geometry_t *tin);
 
@@ -625,8 +668,10 @@ sfcgal_triangulated_surface_num_triangles(const sfcgal_geometry_t *tin);
  * @pre i >= 0 and i < sfcgal_triangulated_surface_num_triangles( tin )
  * @post the returned Triangle is not writable and must not be deallocated by
  * the caller
+ * @deprecated Use sfcgal_geometry_get_geometry_n
  * @ingroup capi
  */
+SFCGAL_DEPRECATED("Use sfcgal_geometry_get_geometry_n instead.")
 SFCGAL_API const sfcgal_geometry_t *
 sfcgal_triangulated_surface_triangle_n(const sfcgal_geometry_t *tin, size_t i);
 

@@ -426,6 +426,34 @@ sfcgal_geometry_delete(sfcgal_geometry_t *geom)
   delete reinterpret_cast<SFCGAL::Geometry *>(geom);
 }
 
+extern "C" auto
+sfcgal_geometry_num_geometries(const sfcgal_geometry_t *geometryCollection)
+    -> size_t
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
+      return down_const_cast<SFCGAL::Geometry>(geometryCollection)
+          ->numGeometries();)
+}
+
+extern "C" auto
+sfcgal_geometry_get_geometry_n(const sfcgal_geometry_t *geometryCollection,
+                               size_t n) -> const sfcgal_geometry_t *
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
+      return static_cast<const SFCGAL::Geometry *>(
+                 &(down_const_cast<SFCGAL::Geometry>(geometryCollection)
+                       ->geometryN(n)));)
+}
+
+extern "C" void
+sfcgal_geometry_set_geometry_n(sfcgal_geometry_t *geometryCollection,
+                               sfcgal_geometry_t *geometry, size_t n)
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      down_cast<SFCGAL::Geometry>(geometryCollection)
+          ->setGeometryN(down_cast<SFCGAL::Geometry>(geometry), n);)
+}
+
 extern "C" void
 sfcgal_geometry_as_text(const sfcgal_geometry_t *pgeom, char **buffer,
                         size_t *len)
