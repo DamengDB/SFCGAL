@@ -23,8 +23,8 @@ void
 ConsistentOrientationBuilder::addTriangulatedSurface(
     const TriangulatedSurface &triangulatedSurface)
 {
-  for (size_t i = 0; i < triangulatedSurface.numGeometries(); i++) {
-    addTriangle(triangulatedSurface.geometryN(i));
+  for (size_t i = 0; i < triangulatedSurface.numPatchs(); i++) {
+    addTriangle(triangulatedSurface.patchN(i));
   }
 }
 
@@ -35,7 +35,7 @@ ConsistentOrientationBuilder::buildTriangulatedSurface() -> TriangulatedSurface
   TriangulatedSurface triangulatedSurface;
 
   for (size_t i = 0; i < numTriangles(); i++) {
-    triangulatedSurface.addTriangle(triangleN(i));
+    triangulatedSurface.addPatch(triangleN(i));
   }
 
   return triangulatedSurface;

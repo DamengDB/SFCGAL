@@ -88,8 +88,49 @@ public:
   swapXY() -> void override;
 
   /**
-   * [SFA/OGC]Returns the number of points
+   * [SFA/OGC]Returns the number of patchs
    * @deprecated see numGeometries()
+   */
+  inline size_t
+  numPatchs() const
+  {
+    return _triangles.size();
+  }
+  /**
+   * [SFA/OGC]Returns the n-th patch
+   */
+  auto
+  patchN(size_t const &n) const -> const Triangle &;
+  /**
+   * [SFA/OGC]Returns the n-th patch
+   */
+  auto
+  patchN(size_t const &n) -> Triangle &;
+  /**
+   * add a Patch to the TriangulatedSurface
+   */
+  inline void
+  addPatch(const Triangle &patch)
+  {
+    addPatch(patch.clone());
+  }
+  /**
+   * add a Patch to the TriangulatedSurface
+   */
+  inline void
+  addPatch(Triangle *patch)
+  {
+    _triangles.push_back(patch);
+  }
+  /**
+   * add patchs from an other TriangulatedSurface
+   */
+  void
+  addPatchs(const TriangulatedSurface &other);
+
+  /**
+   * [SFA/OGC]Returns the number of points
+   * @deprecated see numPatchs()
    */
   inline size_t
   numTriangles() const
@@ -98,7 +139,7 @@ public:
   }
   /**
    * [SFA/OGC]Returns the n-th point
-   * @deprecated see geometryN()
+   * @deprecated see patchN()
    */
   inline const Triangle &
   triangleN(size_t const &n) const
@@ -108,7 +149,7 @@ public:
   }
   /**
    * [SFA/OGC]Returns the n-th point
-   * @deprecated see geometryN()
+   * @deprecated see patchN()
    */
   inline Triangle &
   triangleN(size_t const &n)
@@ -118,6 +159,7 @@ public:
   }
   /**
    * add a Triangle to the TriangulatedSurface
+   * @deprecated see addPatch()
    */
   inline void
   addTriangle(const Triangle &triangle)
@@ -126,6 +168,7 @@ public:
   }
   /**
    * add a Triangle to the TriangulatedSurface
+   * @deprecated see addPatch()
    */
   inline void
   addTriangle(Triangle *triangle)
@@ -134,26 +177,17 @@ public:
   }
   /**
    * add triangles from an other TriangulatedSurface
+   * @deprecated see addPatchs()
    */
   void
   addTriangles(const TriangulatedSurface &other);
 
-  //-- SFCGAL::Geometry
-  size_t
-  numGeometries() const override;
-  //-- SFCGAL::Geometry
-  const Triangle &
-  geometryN(size_t const &n) const override;
-  //-- SFCGAL::Geometry
-  Triangle &
-  geometryN(size_t const &n) override;
-
   /**
    * Sets the n-th Geometry, starting at zero
    * It needs to be a triangle.
    */
   void
-  setGeometryN(const Geometry &geometry, size_t const &n) override;
+  setPatchN(const Geometry &geometry, size_t const &n);
 
   /**
    * Sets the n-th Geometry, starting at zero
@@ -162,21 +196,21 @@ public:
    * anymore of its deallocation.
    */
   void
-  setGeometryN(Geometry *geometry, size_t const &n) override;
+  setPatchN(Geometry *geometry, size_t const &n);
 
   /**
-   * Sets the n-th Triangle, starting at zero
+   * Sets the n-th Patch, starting at zero
    */
   void
-  setGeometryN(const Triangle &triangle, size_t const &n);
+  setPatchN(const Triangle &triangle, size_t const &n);
 
   /**
-   * Sets the n-th Triangle, starting at zero
+   * Sets the n-th Patch, starting at zero
    * The ownership of the polygon is taken. The caller is not responsible
    * anymore of its deallocation.
    */
   void
-  setGeometryN(Triangle *triangle, size_t const &n);
+  setPatchN(Triangle *triangle, size_t const &n);
 
   //-- optimization
 

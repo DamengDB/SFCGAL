@@ -157,9 +157,9 @@ public:
 
     std::vector<std::vector<edge_descriptor>> triangles;
 
-    for (size_t i = 0; i < triangulatedSurface.numGeometries(); i++) {
+    for (size_t i = 0; i < triangulatedSurface.numPatchs(); i++) {
       triangles.push_back(
-          addTriangle(triangulatedSurface.geometryN(i), edgeProperties));
+          addTriangle(triangulatedSurface.patchN(i), edgeProperties));
     }
 
     return triangles;
@@ -178,9 +178,9 @@ public:
 
     std::vector<std::vector<std::vector<edge_descriptor>>> polygons;
 
-    for (size_t i = 0; i < polyhedralSurface.numPolygons(); i++) {
+    for (size_t i = 0; i < polyhedralSurface.numPatchs(); i++) {
       polygons.push_back(
-          addPolygon(polyhedralSurface.polygonN(i), edgeProperties));
+          addPolygon(polyhedralSurface.patchN(i), edgeProperties));
     }
 
     return polygons;

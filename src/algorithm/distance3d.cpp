@@ -58,6 +58,13 @@ distance3D(const Geometry &gA, const Geometry &gB, NoValidityCheck /*unused*/)
     // gA.geometryTypeId() );
     return distanceTriangleGeometry3D(gA.as<Triangle>(), gB);
 
+  case TYPE_POLYHEDRALSURFACE:
+    return distancePolyhedralSurfaceGeometry3D(gA.as<PolyhedralSurface>(), gB);
+
+  case TYPE_TRIANGULATEDSURFACE:
+    return distanceTriangulatedSurfaceGeometry3D(gA.as<TriangulatedSurface>(),
+                                                 gB);
+
   case TYPE_SOLID:
     return distanceSolidGeometry3D(gA.as<Solid>(), gB);
 
@@ -67,8 +74,6 @@ distance3D(const Geometry &gA, const Geometry &gB, NoValidityCheck /*unused*/)
   case TYPE_MULTIPOLYGON:
   case TYPE_MULTISOLID:
   case TYPE_GEOMETRYCOLLECTION:
-  case TYPE_TRIANGULATEDSURFACE:
-  case TYPE_POLYHEDRALSURFACE:
     return distanceGeometryCollectionToGeometry3D(gB, gA);
   }
 
@@ -105,6 +110,12 @@ distancePointGeometry3D(const Point &gA, const Geometry &gB) -> double
   case TYPE_POLYGON:
     return distancePointPolygon3D(gA, gB.as<Polygon>());
 
+  case TYPE_POLYHEDRALSURFACE:
+    return distancePointPolyhedralSurface3D(gA, gB.as<PolyhedralSurface>());
+
+  case TYPE_TRIANGULATEDSURFACE:
+    return distancePointTriangulatedSurface3D(gA, gB.as<TriangulatedSurface>());
+
   case TYPE_SOLID:
     return distancePointSolid3D(gA, gB.as<Solid>());
 
@@ -113,8 +124,6 @@ distancePointGeometry3D(const Point &gA, const Geometry &gB) -> double
   case TYPE_MULTIPOLYGON:
   case TYPE_MULTISOLID:
   case TYPE_GEOMETRYCOLLECTION:
-  case TYPE_TRIANGULATEDSURFACE:
-  case TYPE_POLYHEDRALSURFACE:
     return distanceGeometryCollectionToGeometry3D(gB, gA);
   }
 
@@ -171,7 +180,53 @@ distancePointPolygon3D(const Point &gA, const Polygon &gB) -> double
 
   TriangulatedSurface triangulateSurfaceB;
   triangulate::triangulatePolygon3D(gB, triangulateSurfaceB);
-  return distanceGeometryCollectionToGeometry3D(triangulateSurfaceB, gA);
+  return distancePointTriangulatedSurface3D(gA, triangulateSurfaceB);
+}
+
+auto
+distancePointPolyhedralSurface3D(const Point             &pointA,
+                                 const PolyhedralSurface &polySurfaceB)
+    -> double
+{
+  if (pointA.isEmpty() || polySurfaceB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects3D(pointA, polySurfaceB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < polySurfaceB.numPatchs(); i++) {
+    dMin = std::min(dMin,
+                    distancePolygonGeometry3D(polySurfaceB.patchN(i), pointA));
+  }
+
+  return dMin;
+}
+
+auto
+distancePointTriangulatedSurface3D(
+    const Point &pointA, const TriangulatedSurface &triangulatedSurfaceB)
+    -> double
+{
+  if (pointA.isEmpty() || triangulatedSurfaceB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects3D(pointA, triangulatedSurfaceB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < triangulatedSurfaceB.numPatchs(); i++) {
+    dMin = std::min(dMin, distancePolygonGeometry3D(
+                              triangulatedSurfaceB.patchN(i), pointA));
+  }
+
+  return dMin;
 }
 
 auto
@@ -188,8 +243,7 @@ distancePointSolid3D(const Point &gA, const Solid &gB) -> double
   double dMin = std::numeric_limits<double>::infinity();
 
   for (size_t i = 0; i < gB.numShells(); i++) {
-    dMin = std::min(dMin,
-                    distanceGeometryCollectionToGeometry3D(gB.shellN(i), gA));
+    dMin = std::min(dMin, distancePointPolyhedralSurface3D(gA, gB.shellN(i)));
   }
 
   return dMin;
@@ -214,6 +268,14 @@ distanceLineStringGeometry3D(const LineString &gA, const Geometry &gB) -> double
   case TYPE_POLYGON:
     return distanceLineStringPolygon3D(gA, gB.as<Polygon>());
 
+  case TYPE_POLYHEDRALSURFACE:
+    return distanceLineStringPolyhedralSurface3D(gA,
+                                                 gB.as<PolyhedralSurface>());
+
+  case TYPE_TRIANGULATEDSURFACE:
+    return distanceLineStringTriangulatedSurface3D(
+        gA, gB.as<TriangulatedSurface>());
+
   case TYPE_SOLID:
     return distanceLineStringSolid3D(gA, gB.as<Solid>());
 
@@ -222,8 +284,6 @@ distanceLineStringGeometry3D(const LineString &gA, const Geometry &gB) -> double
   case TYPE_MULTIPOLYGON:
   case TYPE_MULTISOLID:
   case TYPE_GEOMETRYCOLLECTION:
-  case TYPE_TRIANGULATEDSURFACE:
-  case TYPE_POLYHEDRALSURFACE:
     return distanceGeometryCollectionToGeometry3D(gB, gA);
   }
 
@@ -287,7 +347,53 @@ distanceLineStringPolygon3D(const LineString &gA, const Polygon &gB) -> double
 
   TriangulatedSurface triangulateSurfaceB;
   triangulate::triangulatePolygon3D(gB, triangulateSurfaceB);
-  return distanceGeometryCollectionToGeometry3D(triangulateSurfaceB, gA);
+  return distanceLineStringTriangulatedSurface3D(gA, triangulateSurfaceB);
+}
+
+auto
+distanceLineStringPolyhedralSurface3D(const LineString        &lineA,
+                                      const PolyhedralSurface &polySurfaceB)
+    -> double
+{
+  if (lineA.isEmpty() || polySurfaceB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects(lineA, polySurfaceB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < polySurfaceB.numPatchs(); i++) {
+    dMin = std::min(dMin,
+                    distancePolygonGeometry3D(polySurfaceB.patchN(i), lineA));
+  }
+
+  return dMin;
+}
+
+auto
+distanceLineStringTriangulatedSurface3D(
+    const LineString &lineA, const TriangulatedSurface &triangulatedSurfaceB)
+    -> double
+{
+  if (lineA.isEmpty() || triangulatedSurfaceB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects(lineA, triangulatedSurfaceB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < triangulatedSurfaceB.numPatchs(); i++) {
+    dMin = std::min(
+        dMin, distancePolygonGeometry3D(triangulatedSurfaceB.patchN(i), lineA));
+  }
+
+  return dMin;
 }
 
 auto
@@ -304,7 +410,8 @@ distanceLineStringSolid3D(const LineString &gA, const Solid &gB) -> double
   double dMin = std::numeric_limits<double>::infinity();
 
   for (size_t i = 0; i < gB.numShells(); i++) {
-    dMin = std::min(dMin, gB.shellN(i).distance3D(gA));
+    dMin =
+        std::min(dMin, distanceLineStringPolyhedralSurface3D(gA, gB.shellN(i)));
   }
 
   return dMin;
@@ -329,6 +436,14 @@ distanceTriangleGeometry3D(const Triangle &gA, const Geometry &gB) -> double
   case TYPE_POLYGON:
     return distancePolygonGeometry3D(gB.as<Polygon>(), gA);
 
+  case TYPE_POLYHEDRALSURFACE:
+    return distancePolyhedralSurfaceGeometry3D(gB.as<PolyhedralSurface>(),
+                                               gA); // symetric
+
+  case TYPE_TRIANGULATEDSURFACE:
+    return distanceTriangulatedSurfaceGeometry3D(gB.as<TriangulatedSurface>(),
+                                                 gA); // symetric
+
   case TYPE_SOLID:
     return distanceTriangleSolid3D(gA, gB.as<Solid>());
 
@@ -337,8 +452,6 @@ distanceTriangleGeometry3D(const Triangle &gA, const Geometry &gB) -> double
   case TYPE_MULTIPOLYGON:
   case TYPE_MULTISOLID:
   case TYPE_GEOMETRYCOLLECTION:
-  case TYPE_TRIANGULATEDSURFACE:
-  case TYPE_POLYHEDRALSURFACE:
     return distanceGeometryCollectionToGeometry3D(gB, gA);
   }
 
@@ -346,6 +459,50 @@ distanceTriangleGeometry3D(const Triangle &gA, const Geometry &gB) -> double
       Exception((boost::format("distance3D(%s,%s) is not implemented") %
                  gA.geometryType() % gB.geometryType())
                     .str()));
+}
+
+auto
+distanceTrianglePolyhedralSurface3D(const Triangle          &triangleA,
+                                    const PolyhedralSurface &polySurfaceB)
+    -> double
+{
+  if (triangleA.isEmpty() || polySurfaceB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects3D(triangleA, polySurfaceB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < polySurfaceB.numPatchs(); i++) {
+    dMin = std::min(dMin, polySurfaceB.patchN(i).distance3D(triangleA));
+  }
+
+  return dMin;
+}
+
+auto
+distanceTriangleTriangulatedSurface3D(
+    const Triangle &triangleA, const TriangulatedSurface &triangulatedSurfaceB)
+    -> double
+{
+  if (triangleA.isEmpty() || triangulatedSurfaceB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects3D(triangleA, triangulatedSurfaceB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < triangulatedSurfaceB.numPatchs(); i++) {
+    dMin = std::min(dMin, triangulatedSurfaceB.patchN(i).distance3D(triangleA));
+  }
+
+  return dMin;
 }
 
 auto
@@ -362,7 +519,8 @@ distanceTriangleSolid3D(const Triangle &gA, const Solid &gB) -> double
   double dMin = std::numeric_limits<double>::infinity();
 
   for (size_t i = 0; i < gB.numShells(); i++) {
-    dMin = std::min(dMin, gB.shellN(i).distance3D(gA));
+    dMin =
+        std::min(dMin, distanceTrianglePolyhedralSurface3D(gA, gB.shellN(i)));
   }
 
   return dMin;
@@ -380,7 +538,51 @@ distancePolygonGeometry3D(const Polygon &gA, const Geometry &gB) -> double
 
   TriangulatedSurface triangulateSurfaceA;
   triangulate::triangulatePolygon3D(gA, triangulateSurfaceA);
-  return distanceGeometryCollectionToGeometry3D(triangulateSurfaceA, gB);
+  return distanceTriangulatedSurfaceGeometry3D(triangulateSurfaceA, gB);
+}
+
+auto
+distancePolyhedralSurfaceGeometry3D(const PolyhedralSurface &polySurfaceA,
+                                    const Geometry          &geomB) -> double
+{
+  if (polySurfaceA.isEmpty() || geomB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects(polySurfaceA, geomB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < polySurfaceA.numPatchs(); i++) {
+    dMin = std::min(dMin,
+                    distancePolygonGeometry3D(polySurfaceA.patchN(i), geomB));
+  }
+
+  return dMin;
+}
+
+auto
+distanceTriangulatedSurfaceGeometry3D(
+    const TriangulatedSurface &triangulatedSurfaceA, const Geometry &geomB)
+    -> double
+{
+  if (triangulatedSurfaceA.isEmpty() || geomB.isEmpty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  if (intersects(triangulatedSurfaceA, geomB, NoValidityCheck())) {
+    return 0.0;
+  }
+
+  double dMin = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < triangulatedSurfaceA.numPatchs(); i++) {
+    dMin = std::min(dMin, triangulatedSurfaceA.patchN(i).distance3D(geomB));
+  }
+
+  return dMin;
 }
 
 auto
@@ -402,6 +604,14 @@ distanceSolidGeometry3D(const Solid &gA, const Geometry &gB) -> double
   case TYPE_POLYGON:
     return distancePolygonGeometry3D(gB.as<Polygon>(), gA); // symetric
 
+  case TYPE_POLYHEDRALSURFACE:
+    return distancePolyhedralSurfaceGeometry3D(gB.as<PolyhedralSurface>(),
+                                               gA); // symetric
+
+  case TYPE_TRIANGULATEDSURFACE:
+    return distanceTriangulatedSurfaceGeometry3D(gB.as<TriangulatedSurface>(),
+                                                 gA); // symetric
+
   case TYPE_SOLID:
     return distanceSolidSolid3D(gA, gB.as<Solid>());
 
@@ -410,8 +620,6 @@ distanceSolidGeometry3D(const Solid &gA, const Geometry &gB) -> double
   case TYPE_MULTIPOLYGON:
   case TYPE_MULTISOLID:
   case TYPE_GEOMETRYCOLLECTION:
-  case TYPE_TRIANGULATEDSURFACE:
-  case TYPE_POLYHEDRALSURFACE:
     return distanceGeometryCollectionToGeometry3D(gB, gA);
   }
 

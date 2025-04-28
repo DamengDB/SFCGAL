@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(defaultConstructor)
 {
   TriangulatedSurface const g;
   BOOST_CHECK(g.isEmpty());
-  BOOST_CHECK_EQUAL(g.numTriangles(), 0U);
+  BOOST_CHECK_EQUAL(g.numPatchs(), 0U);
   BOOST_CHECK_EQUAL(g.numGeometries(), 0U);
 }
 // TriangulatedSurface( const std::vector< Triangle > & triangle ) ;
@@ -50,17 +50,17 @@ BOOST_AUTO_TEST_CASE(constructorWithTriangles)
 
   TriangulatedSurface const g(triangles);
   BOOST_CHECK(!g.isEmpty());
-  BOOST_CHECK_EQUAL(g.numTriangles(), 2U);
-  BOOST_CHECK_EQUAL(g.numGeometries(), 2U);
+  BOOST_CHECK_EQUAL(g.numPatchs(), 2U);
+  BOOST_CHECK_EQUAL(g.numGeometries(), 1U);
 }
 
 // TriangulatedSurface( TriangulatedSurface const& other ) ;
 // TriangulatedSurface& operator = ( const TriangulatedSurface & other ) ;
 //~TriangulatedSurface() ;
 
-// inline size_t             numTriangles() const { return _triangles.size(); }
-// inline const Triangle  &  triangleN( size_t const& n ) const {
-// inline Triangle &         triangleN( size_t const& n ) {
+// inline size_t             numPatchs() const { return _triangles.size(); }
+// inline const Triangle  &  patchN( size_t const& n ) const {
+// inline Triangle &         patchN( size_t const& n ) {
 // inline void               addTriangle( const Triangle & triangle )
 // inline void               addTriangle( Triangle * triangle )
 // void                      addTriangles( const TriangulatedSurface & other ) ;
@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE(testClone)
 
   std::unique_ptr<Geometry> copy(g.clone());
   BOOST_REQUIRE(copy->is<TriangulatedSurface>());
-  BOOST_CHECK_EQUAL(copy->as<TriangulatedSurface>().numTriangles(), 2U);
-  BOOST_CHECK_EQUAL(copy->as<TriangulatedSurface>().numGeometries(), 2U);
+  BOOST_CHECK_EQUAL(copy->as<TriangulatedSurface>().numPatchs(), 2U);
+  BOOST_CHECK_EQUAL(copy->as<TriangulatedSurface>().numGeometries(), 1U);
 }
 
 // virtual Geometry*    Geometry::boundary() const ;
@@ -216,13 +216,13 @@ BOOST_AUTO_TEST_CASE(polyhedronConversionTest)
   BOOST_CHECK_EQUAL(poly->size_of_vertices(), 6U);
 }
 
-BOOST_AUTO_TEST_CASE(setGeometryNTest)
+BOOST_AUTO_TEST_CASE(setPatchNTest)
 {
   std::unique_ptr<Geometry> emptyGeom(io::readWkt("TIN EMPTY"));
   BOOST_CHECK(emptyGeom->is<TriangulatedSurface>());
   BOOST_CHECK(emptyGeom->isEmpty());
   BOOST_CHECK_EQUAL(emptyGeom->numGeometries(), 0);
-  BOOST_CHECK_THROW(emptyGeom->geometryN(0), Exception);
+  BOOST_CHECK_EQUAL(emptyGeom->as<TriangulatedSurface>().numPatchs(), 0);
 
   std::string const triangulatedSurfaceStr = "TIN Z ("
                                              "((0 0 0, 2 0 2, 1 2 4, 0 0 0)),"
@@ -232,26 +232,27 @@ BOOST_AUTO_TEST_CASE(setGeometryNTest)
 
   std::unique_ptr<Geometry> geom(io::readWkt(triangulatedSurfaceStr));
   BOOST_CHECK(!geom->isEmpty());
-  BOOST_CHECK_EQUAL(geom->numGeometries(), 3);
-  BOOST_CHECK_EQUAL(geom->geometryN(0).asText(0),
+  BOOST_CHECK_EQUAL(geom->numGeometries(), 1);
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().numPatchs(), 3);
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(0).asText(0),
                     "TRIANGLE Z ((0 0 0,2 0 2,1 2 4,0 0 0))");
-  BOOST_CHECK_EQUAL(geom->geometryN(1).asText(0),
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(1).asText(0),
                     "TRIANGLE Z ((2 0 2,3 2 3,1 2 4,2 0 2))");
-  BOOST_CHECK_EQUAL(geom->geometryN(2).asText(0),
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(2).asText(0),
                     "TRIANGLE Z ((1 2 4,3 2 3,2 4 6,1 2 4))");
-  BOOST_CHECK_THROW(geom->geometryN(3), Exception);
 
   // set new Polygon at index 1 from a Geometry object
   std::string const newTriangleStr =
       "TRIANGLE Z ((0 0 0, 2 0 4, 1 2 2, 0 0 0))";
   std::unique_ptr<Geometry> newGeom(io::readWkt(newTriangleStr));
-  geom->setGeometryN(newGeom->clone(), 1);
+  geom->as<TriangulatedSurface>().setPatchN(newGeom->clone(), 1);
 
-  BOOST_CHECK_EQUAL(geom->numGeometries(), 3);
-  BOOST_CHECK_EQUAL(geom->geometryN(0).asText(0),
+  BOOST_CHECK_EQUAL(geom->numGeometries(), 1);
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().numPatchs(), 3);
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(0).asText(0),
                     "TRIANGLE Z ((0 0 0,2 0 2,1 2 4,0 0 0))");
-  BOOST_CHECK_EQUAL(geom->geometryN(1).asText(), newGeom->asText());
-  BOOST_CHECK_EQUAL(geom->geometryN(2).asText(0),
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(1).asText(), newGeom->asText());
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(2).asText(0),
                     "TRIANGLE Z ((1 2 4,3 2 3,2 4 6,1 2 4))");
 
   // set New Triangle at index 2 from a Triangle
@@ -260,13 +261,14 @@ BOOST_AUTO_TEST_CASE(setGeometryNTest)
   std::unique_ptr<Geometry> newGeom2(io::readWkt(newTriangleStr2));
   Triangle *newTriangle2 = dynamic_cast<Triangle *>(newGeom2.get());
   BOOST_CHECK(newTriangle2);
-  geom->setGeometryN(newTriangle2->clone(), 2);
+  geom->as<TriangulatedSurface>().setPatchN(newTriangle2->clone(), 2);
 
-  BOOST_CHECK_EQUAL(geom->numGeometries(), 3);
-  BOOST_CHECK_EQUAL(geom->geometryN(0).asText(0),
+  BOOST_CHECK_EQUAL(geom->numGeometries(), 1);
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().numPatchs(), 3);
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(0).asText(0),
                     "TRIANGLE Z ((0 0 0,2 0 2,1 2 4,0 0 0))");
-  BOOST_CHECK_EQUAL(geom->geometryN(1).asText(), newGeom->asText());
-  BOOST_CHECK_EQUAL(geom->geometryN(2).asText(), newGeom2->asText());
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(1).asText(), newGeom->asText());
+  BOOST_CHECK_EQUAL(geom->as<TriangulatedSurface>().patchN(2).asText(), newGeom2->asText());
 }
 
 BOOST_AUTO_TEST_CASE(dropZMTest)
@@ -288,12 +290,13 @@ BOOST_AUTO_TEST_CASE(dropZMTest)
   BOOST_CHECK(!geom3D->isEmpty());
   BOOST_CHECK(geom3D->is3D());
   BOOST_CHECK(geom3D->dropZ());
-  BOOST_CHECK_EQUAL(geom3D->numGeometries(), 3);
-  BOOST_CHECK_EQUAL(geom3D->geometryN(0).asText(0),
+  BOOST_CHECK_EQUAL(geom3D->numGeometries(), 1);
+  BOOST_CHECK_EQUAL(geom3D->as<TriangulatedSurface>().numPatchs(), 3);
+  BOOST_CHECK_EQUAL(geom3D->as<TriangulatedSurface>().patchN(0).asText(0),
                     "TRIANGLE ((0 0,2 0,1 2,0 0))");
-  BOOST_CHECK_EQUAL(geom3D->geometryN(1).asText(0),
+  BOOST_CHECK_EQUAL(geom3D->as<TriangulatedSurface>().patchN(1).asText(0),
                     "TRIANGLE ((2 0,3 2,1 2,2 0))");
-  BOOST_CHECK_EQUAL(geom3D->geometryN(2).asText(0),
+  BOOST_CHECK_EQUAL(geom3D->as<TriangulatedSurface>().patchN(2).asText(0),
                     "TRIANGLE ((1 2,3 2,2 4,1 2))");
 
   std::string const triangulatedSurfaceMStr =

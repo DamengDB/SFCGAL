@@ -457,7 +457,7 @@ WktReader::readInnerTriangulatedSurface(TriangulatedSurface &g)
   while (!_reader.eof()) {
     std::unique_ptr<Triangle> triangle(new Triangle());
     readInnerTriangle(*triangle);
-    g.addTriangle(triangle.release());
+    g.addPatch(triangle.release());
 
     if (!_reader.match(',')) {
       break;
@@ -483,7 +483,7 @@ WktReader::readInnerPolyhedralSurface(PolyhedralSurface &g)
   while (!_reader.eof()) {
     std::unique_ptr<Polygon> polygon(new Polygon());
     readInnerPolygon(*polygon);
-    g.addPolygon(polygon.release());
+    g.addPatch(polygon.release());
 
     // break if not followed by another points
     if (!_reader.match(',')) {

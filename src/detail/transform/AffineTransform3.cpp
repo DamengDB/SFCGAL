@@ -70,16 +70,16 @@ AffineTransform3::transform(Polygon &poly)
 void
 AffineTransform3::transform(PolyhedralSurface &surf)
 {
-  for (size_t i = 0; i < surf.numPolygons(); ++i) {
-    transform(surf.polygonN(i));
+  for (size_t i = 0; i < surf.numPatchs(); ++i) {
+    transform(surf.patchN(i));
   }
 }
 
 void
 AffineTransform3::transform(TriangulatedSurface &surf)
 {
-  for (size_t i = 0; i < surf.numGeometries(); ++i) {
-    transform(surf.geometryN(i));
+  for (size_t i = 0; i < surf.numPatchs(); ++i) {
+    transform(surf.patchN(i));
   }
 }
 

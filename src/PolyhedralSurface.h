@@ -135,66 +135,107 @@ public:
   toTriangulatedSurface() const;
 
   /**
+   * [SFA/OGC]Returns the number of patchs
+   * @warning PolyhedralSurface is treated as one geometry. numGeometries
+   * returns 1 or 0 for empty PolyhedralSurface
+   */
+  inline size_t
+  numPatchs() const
+  {
+    return _polygons.size();
+  }
+
+  /**
    * [SFA/OGC]Returns the number of polygons
-   * @deprecated see numGeometries
+   *
+   * @warning PolyhedralSurface is treated as one geometry. numGeometries
+   * returns 1 or 0 for empty PolyhedralSurface
+   * @deprecated see numPatchs
+   * @see numGeometries()
    */
   inline size_t
   numPolygons() const
   {
-    return _polygons.size();
+    return numPatchs();
+  }
+
+  /**
+   * [SFA/OGC]Returns the n-th patch
+   */
+  inline const Polygon &
+  patchN(size_t const &n) const
+  {
+    BOOST_ASSERT(n < _polygons.size());
+    return _polygons[n];
   }
   /**
+   * [SFA/OGC]Returns the n-th patch
+   */
+  inline Polygon &
+  patchN(size_t const &n)
+  {
+    BOOST_ASSERT(n < _polygons.size());
+    return _polygons[n];
+  }
+  /**
+   * add a patch to the PolyhedralSurface
+   */
+  void
+  addPatch(const Polygon &polygon);
+  /**
+   * add a patch to the PolyhedralSurface
+   */
+  void
+  addPatch(Polygon *polygon);
+  /**
+   * add patchs from an other PolyhedralSurface
+   */
+  void
+  addPatchs(const PolyhedralSurface &polyhedralSurface);
+
+  /**
    * [SFA/OGC]Returns the n-th polygon
-   * @deprecated see geometryN()
+   * @deprecated see patchN()
    */
   inline const Polygon &
   polygonN(size_t const &n) const
   {
-    BOOST_ASSERT(n < _polygons.size());
-    return _polygons[n];
+    return patchN(n);
   }
   /**
    * [SFA/OGC]Returns the n-th polygon
-   * @deprecated see geometryN()
+   * @deprecated see patchN()
    */
   inline Polygon &
   polygonN(size_t const &n)
   {
-    BOOST_ASSERT(n < _polygons.size());
-    return _polygons[n];
+    return patchN(n);
   }
   /**
    * add a polygon to the PolyhedralSurface
+   * @deprecated see addPatch()
    */
   void
   addPolygon(const Polygon &polygon);
   /**
    * add a polygon to the PolyhedralSurface
+   * @deprecated see addPatch()
    */
   void
   addPolygon(Polygon *polygon);
   /**
    * add polygons from an other PolyhedralSurface
+   * @deprecated see addPatchs()
    */
   void
   addPolygons(const PolyhedralSurface &polyhedralSurface);
 
-  //-- SFCGAL::Geometry
-  size_t
-  numGeometries() const override;
-  //-- SFCGAL::Geometry
-  const Polygon &
-  geometryN(size_t const &n) const override;
-  //-- SFCGAL::Geometry
-  Polygon &
-  geometryN(size_t const &n) override;
-
   /**
    * Sets the n-th Geometry, starting at zero
    * It needs to be a polygon.
    */
   void
-  setGeometryN(const Geometry &geometry, size_t const &n) override;
+  setPatchN(const Geometry &geometry, size_t const &n);
 
   /**
    * Sets the n-th Geometry, starting at zero
@@ -203,21 +244,21 @@ public:
    * anymore of its deallocation.
    */
   void
-  setGeometryN(Geometry *geometry, size_t const &n) override;
+  setPatchN(Geometry *geometry, size_t const &n);
 
   /**
-   * Sets the n-th Polygon, starting at zero
+   * Sets the n-th Patch, starting at zero
    */
   void
-  setGeometryN(const Polygon &polygon, size_t const &n);
+  setPatchN(const Polygon &patch, size_t const &n);
 
   /**
-   * Sets the n-th Polygon, starting at zero
+   * Sets the n-th Patch, starting at zero
    * The ownership of the polygon is taken. The caller is not responsible
    * anymore of its deallocation.
    */
   void
-  setGeometryN(Polygon *polygon, size_t const &n);
+  setPatchN(Polygon *patch, size_t const &n);
 
   /**
    * Convert to CGAL::Polyhedron_3

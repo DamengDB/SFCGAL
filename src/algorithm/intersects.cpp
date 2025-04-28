@@ -547,13 +547,13 @@ auto
 selfIntersectsImpl(const PolyhedralSurface &s, const SurfaceGraph &graph)
     -> bool
 {
-  size_t const numPolygons = s.numPolygons();
+  size_t const numPatchs = s.numPatchs();
 
-  for (size_t pi = 0; pi != numPolygons; ++pi) {
-    for (size_t pj = pi + 1; pj < numPolygons; ++pj) {
+  for (size_t pi = 0; pi != numPatchs; ++pi) {
+    for (size_t pj = pi + 1; pj < numPatchs; ++pj) {
       std::unique_ptr<Geometry> inter =
-          Dim == 3 ? intersection3D(s.polygonN(pi), s.polygonN(pj))
-                   : intersection(s.polygonN(pi), s.polygonN(pj));
+          Dim == 3 ? intersection3D(s.patchN(pi), s.patchN(pj))
+                   : intersection(s.patchN(pi), s.patchN(pj));
 
       if (!inter->isEmpty()) {
         // two cases:
@@ -602,13 +602,13 @@ auto
 selfIntersectsImpl(const TriangulatedSurface &tin, const SurfaceGraph &graph)
     -> bool
 {
-  size_t const numTriangles = tin.numTriangles();
+  size_t const numPatchs = tin.numPatchs();
 
-  for (size_t ti = 0; ti != numTriangles; ++ti) {
-    for (size_t tj = ti + 1; tj < numTriangles; ++tj) {
+  for (size_t ti = 0; ti != numPatchs; ++ti) {
+    for (size_t tj = ti + 1; tj < numPatchs; ++tj) {
       std::unique_ptr<Geometry> inter =
-          Dim == 3 ? intersection3D(tin.triangleN(ti), tin.triangleN(tj))
-                   : intersection(tin.triangleN(ti), tin.triangleN(tj));
+          Dim == 3 ? intersection3D(tin.patchN(ti), tin.patchN(tj))
+                   : intersection(tin.patchN(ti), tin.patchN(tj));
 
       if (!inter->isEmpty()) {
         // two cases:

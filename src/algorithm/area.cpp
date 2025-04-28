@@ -129,8 +129,8 @@ area(const TriangulatedSurface &g) -> double
 {
   double result = 0.0;
 
-  for (size_t i = 0; i < g.numTriangles(); i++) {
-    result += area(g.triangleN(i));
+  for (size_t i = 0; i < g.numPatchs(); i++) {
+    result += area(g.patchN(i));
   }
 
   return result;
@@ -141,8 +141,8 @@ area(const PolyhedralSurface &g) -> double
 {
   double result = 0.0;
 
-  for (size_t i = 0; i < g.numPolygons(); i++) {
-    result += area(g.polygonN(i));
+  for (size_t i = 0; i < g.numPatchs(); i++) {
+    result += area(g.patchN(i));
   }
 
   return result;
@@ -273,8 +273,8 @@ area3D(const PolyhedralSurface &g) -> double
 {
   double area = 0.0;
 
-  for (size_t i = 0; i < g.numPolygons(); i++) {
-    area += area3D(g.polygonN(i));
+  for (size_t i = 0; i < g.numPatchs(); i++) {
+    area += area3D(g.patchN(i));
   }
 
   return area;
@@ -285,8 +285,8 @@ area3D(const TriangulatedSurface &g) -> double
 {
   double result = 0.0;
 
-  for (size_t i = 0; i < g.numGeometries(); i++) {
-    result += area3D(g.geometryN(i));
+  for (size_t i = 0; i < g.numPatchs(); i++) {
+    result += area3D(g.patchN(i));
   }
 
   return result;

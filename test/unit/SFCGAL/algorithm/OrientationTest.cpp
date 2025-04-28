@@ -54,15 +54,15 @@ BOOST_AUTO_TEST_CASE(testHasConsistentOrientation3D_basicTriangles)
 {
   TriangulatedSurface triangulatedSurface;
   BOOST_CHECK(algorithm::hasConsistentOrientation3D(triangulatedSurface));
-  triangulatedSurface.addTriangle(Triangle(
+  triangulatedSurface.addPatch(Triangle(
       Point(0.0, 0.0, 0.0), Point(1.0, 0.0, 0.0), Point(0.0, 1.0, 0.0)));
   BOOST_CHECK(algorithm::hasConsistentOrientation3D(triangulatedSurface));
 
-  triangulatedSurface.addTriangle(Triangle(
+  triangulatedSurface.addPatch(Triangle(
       Point(0.0, 0.0, 0.0), Point(0.0, 1.0, 0.0), Point(-1.0, 0.0, 0.0)));
   BOOST_CHECK(algorithm::hasConsistentOrientation3D(triangulatedSurface));
 
-  triangulatedSurface.addTriangle(Triangle(
+  triangulatedSurface.addPatch(Triangle(
       Point(0.0, 0.0, 0.0), Point(1.0, 0.0, 0.0), Point(0.0, -1.0, 0.0)));
   BOOST_CHECK(!algorithm::hasConsistentOrientation3D(triangulatedSurface));
 }
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(testHasConsistentOrientation3D_basicPolygons)
     ring.addPoint(Point(0.0, 1.0, 0.0));
     ring.addPoint(ring.startPoint());
 
-    polyhedralSurface.addPolygon(Polygon(ring));
+    polyhedralSurface.addPatch(Polygon(ring));
   }
   BOOST_CHECK(algorithm::hasConsistentOrientation3D(polyhedralSurface));
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(testHasConsistentOrientation3D_basicPolygons)
     ring.addPoint(Point(1.0, 1.0, 0.0));
     ring.addPoint(ring.startPoint());
 
-    polyhedralSurface.addPolygon(Polygon(ring));
+    polyhedralSurface.addPatch(Polygon(ring));
   }
   BOOST_CHECK(algorithm::hasConsistentOrientation3D(polyhedralSurface));
 
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(testHasConsistentOrientation3D_basicPolygons)
     ring.addPoint(Point(0.0, 1.0, 0.0));
     ring.addPoint(ring.startPoint());
 
-    polyhedralSurface.addPolygon(Polygon(ring));
+    polyhedralSurface.addPatch(Polygon(ring));
   }
   BOOST_CHECK(!algorithm::hasConsistentOrientation3D(polyhedralSurface));
 }

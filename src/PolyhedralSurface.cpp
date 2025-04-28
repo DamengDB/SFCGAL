@@ -29,11 +29,11 @@ PolyhedralSurface::PolyhedralSurface(const std::unique_ptr<Geometry> &geometry)
   } else if (geometry->is<TriangulatedSurface>()) {
     const TriangulatedSurface &triangulatedSurface =
         geometry->as<TriangulatedSurface>();
-    for (size_t i = 0; i < triangulatedSurface.numTriangles(); ++i) {
-      this->addPolygon(triangulatedSurface.triangleN(i));
+    for (size_t i = 0; i < triangulatedSurface.numPatchs(); ++i) {
+      this->addPatch(triangulatedSurface.patchN(i));
     }
   } else if (geometry->is<Polygon>()) {
-    this->addPolygon(geometry->as<Polygon>());
+    this->addPatch(geometry->as<Polygon>());
   } else {
     throw std::invalid_argument("Cannot convert geometry to PolyhedralSurface");
   }
@@ -188,84 +188,68 @@ PolyhedralSurface::toTriangulatedSurface() const -> TriangulatedSurface
 }
 
 void
+PolyhedralSurface::addPatch(const Polygon &patch)
+{
+  addPatch(patch.clone());
+}
+
+void
+PolyhedralSurface::addPatch(Polygon *patch)
+{
+  BOOST_ASSERT(polygon != NULL);
+  _polygons.push_back(patch);
+}
+
+void
+PolyhedralSurface::addPatchs(const PolyhedralSurface &polyhedralSurface)
+{
+  for (size_t i = 0; i < polyhedralSurface.numPatchs(); i++) {
+    addPatch(polyhedralSurface.patchN(i));
+  }
+}
+
+void
 PolyhedralSurface::addPolygon(const Polygon &polygon)
 {
-  addPolygon(polygon.clone());
+  return addPatch(polygon);
 }
 
 void
 PolyhedralSurface::addPolygon(Polygon *polygon)
 {
-  BOOST_ASSERT(polygon != NULL);
-  _polygons.push_back(polygon);
+  return addPatch(polygon);
 }
 
 void
 PolyhedralSurface::addPolygons(const PolyhedralSurface &polyhedralSurface)
 {
-  for (size_t i = 0; i < polyhedralSurface.numPolygons(); i++) {
-    addPolygon(polyhedralSurface.polygonN(i));
-  }
-}
-
-auto
-PolyhedralSurface::numGeometries() const -> size_t
-{
-  return _polygons.size();
-}
-
-auto
-PolyhedralSurface::geometryN(size_t const &n) const -> const Polygon &
-{
-  if (n >= numGeometries()) {
-    BOOST_THROW_EXCEPTION(
-        Exception((boost::format("Cannot access geometry at position %s. "
-                                 "PolyhedralSurface has only %d geometries.") %
-                   n % numGeometries())
-                      .str()));
-  }
-
-  return _polygons[n];
-}
-
-auto
-PolyhedralSurface::geometryN(size_t const &n) -> Polygon &
-{
-  if (n >= numGeometries()) {
-    BOOST_THROW_EXCEPTION(
-        Exception((boost::format("Cannot access geometry at position %s. "
-                                 "PolyhedralSurface has only %d geometries.") %
-                   n % numGeometries())
-                      .str()));
-  }
-
-  return _polygons[n];
+  return addPatchs(polyhedralSurface);
 }
 
 void
-PolyhedralSurface::setGeometryN(Polygon *polygon, size_t const &n)
+PolyhedralSurface::setPatchN(Polygon *patch, size_t const &n)
 {
   BOOST_ASSERT(polygon != NULL);
 
-  if (n >= numGeometries()) {
+  if (n >= numPatchs()) {
     BOOST_THROW_EXCEPTION(
         Exception((boost::format("Cannot set geometry at position %s. "
                                  "PolyhedralSurface has only %d geometries.") %
-                   n % numGeometries())
+                   n % numPatchs())
                       .str()));
   }
 
-  _polygons.replace(n, polygon);
+  _polygons.replace(n, patch);
 }
 
 void
-PolyhedralSurface::setGeometryN(const Polygon &polygon, size_t const &n)
+PolyhedralSurface::setPatchN(const Polygon &patch, size_t const &n)
 {
-  setGeometryN(polygon.clone(), n);
+  setPatchN(patch.clone(), n);
 }
 
 void
-PolyhedralSurface::setGeometryN(Geometry *geometry, size_t const &n)
+PolyhedralSurface::setPatchN(Geometry *geometry, size_t const &n)
 {
   if (geometry->geometryTypeId() != TYPE_POLYGON) {
     std::ostringstream oss;
@@ -275,13 +259,13 @@ PolyhedralSurface::setGeometryN(Geometry *geometry, size_t const &n)
     BOOST_THROW_EXCEPTION(InappropriateGeometryException(oss.str()));
   }
 
-  setGeometryN(dynamic_cast<Polygon *>(geometry), n);
+  setPatchN(dynamic_cast<Polygon *>(geometry), n);
 }
 
 void
-PolyhedralSurface::setGeometryN(const Geometry &geometry, size_t const &n)
+PolyhedralSurface::setPatchN(const Geometry &geometry, size_t const &n)
 {
-  setGeometryN(geometry.clone(), n);
+  setPatchN(geometry.clone(), n);
 }
 
 void

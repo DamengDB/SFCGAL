@@ -123,23 +123,23 @@ TriangulatedSurface::swapXY() -> void
 }
 
 void
-TriangulatedSurface::addTriangles(const TriangulatedSurface &other)
+TriangulatedSurface::addPatchs(const TriangulatedSurface &other)
 {
   for (const auto &it : other) {
-    addTriangle(it);
+    addPatch(it);
   }
 }
 
-auto
-TriangulatedSurface::numGeometries() const -> size_t
+void
+TriangulatedSurface::addTriangles(const TriangulatedSurface &other)
 {
-  return _triangles.size();
+  return addPatchs(other);
 }
 
 auto
-TriangulatedSurface::geometryN(size_t const &n) const -> const Triangle &
+TriangulatedSurface::patchN(size_t const &n) const -> const Triangle &
 {
-  if (n >= numGeometries()) {
+  if (n >= numPatchs()) {
     BOOST_THROW_EXCEPTION(Exception(
         (boost::format("Cannot access geometry at position %s. "
                        "TriangulatedSurface has only %d geometries.") %
@@ -151,13 +151,13 @@ TriangulatedSurface::geometryN(size_t const &n) const -> const Triangle &
 }
 
 auto
-TriangulatedSurface::geometryN(size_t const &n) -> Triangle &
+TriangulatedSurface::patchN(size_t const &n) -> Triangle &
 {
-  if (n >= numGeometries()) {
+  if (n >= numPatchs()) {
     BOOST_THROW_EXCEPTION(Exception(
         (boost::format("Cannot access geometry at position %s. "
                        "TriangulatedSurface has only %d geometries.") %
-         n % numGeometries())
+         n % numPatchs())
             .str()));
   }
 
@@ -165,15 +165,15 @@ TriangulatedSurface::geometryN(size_t const &n) -> Triangle &
 }
 
 void
-TriangulatedSurface::setGeometryN(Triangle *triangle, size_t const &n)
+TriangulatedSurface::setPatchN(Triangle *triangle, size_t const &n)
 {
   BOOST_ASSERT(triangle != NULL);
 
-  if (n >= numGeometries()) {
+  if (n >= numPatchs()) {
     BOOST_THROW_EXCEPTION(Exception(
         (boost::format("Cannot set geometry at position %s. "
                        "TriangulatedSurface has only %d geometries.") %
-         n % numGeometries())
+         n % numPatchs())
             .str()));
   }
 
@@ -181,13 +181,13 @@ TriangulatedSurface::setGeometryN(Triangle *triangle, size_t const &n)
 }
 
 void
-TriangulatedSurface::setGeometryN(const Triangle &triangle, size_t const &n)
+TriangulatedSurface::setPatchN(const Triangle &triangle, size_t const &n)
 {
-  setGeometryN(triangle.clone(), n);
+  setPatchN(triangle.clone(), n);
 }
 
 void
-TriangulatedSurface::setGeometryN(Geometry *geometry, size_t const &n)
+TriangulatedSurface::setPatchN(Geometry *geometry, size_t const &n)
 {
   if (geometry->geometryTypeId() != TYPE_TRIANGLE) {
     std::ostringstream oss;
@@ -197,13 +197,13 @@ TriangulatedSurface::setGeometryN(Geometry *geometry, size_t const &n)
     BOOST_THROW_EXCEPTION(InappropriateGeometryException(oss.str()));
   }
 
-  setGeometryN(dynamic_cast<Triangle *>(geometry), n);
+  setPatchN(dynamic_cast<Triangle *>(geometry), n);
 }
 
 void
-TriangulatedSurface::setGeometryN(const Geometry &geometry, size_t const &n)
+TriangulatedSurface::setPatchN(const Geometry &geometry, size_t const &n)
 {
-  setGeometryN(geometry.clone(), n);
+  setPatchN(geometry.clone(), n);
 }
 
 void
@@ -241,19 +241,20 @@ public:
   void
   operator()(HDS &hds) override
   {
+    const size_t nrPatchs = surf.numPatchs();
     // Postcondition: `hds' is a valid polyhedral surface.
     CGAL::Polyhedron_incremental_builder_3<HDS> B(hds, true);
-    B.begin_surface(/* vertices */ surf.numGeometries() * 3,
-                    /* facets */ surf.numGeometries(),
-                    /* halfedges */ surf.numGeometries() * 3);
+    B.begin_surface(/* vertices */ nrPatchs * 3,
+                    /* facets */ nrPatchs,
+                    /* halfedges */ nrPatchs * 3);
 
     size_t vertex_idx = 0;
 
     // first pass: insert vertices, only if they are not shared between faces
     // thanks to a binary tree (PointMap)
-    for (size_t i = 0; i < surf.numGeometries(); i++) {
+    for (size_t i = 0; i < nrPatchs; i++) {
       for (size_t j = 0; j < 3; j++) {
-        Point const p = surf.geometryN(i).vertex(j).toPoint_3();
+        Point const p = surf.patchN(i).vertex(j).toPoint_3();
 
         if (points.find(p) == points.end()) {
           B.add_vertex(p);
@@ -269,9 +270,9 @@ public:
     // "The convention is that the halfedges are oriented counterclockwise
     // around facets as seen from the outside of the polyhedron"
 
-    for (size_t i = 0; i < surf.numGeometries(); i++) {
+    for (size_t i = 0; i < nrPatchs; i++) {
       B.begin_facet();
-      CGAL::Triangle_3<K> const tri(surf.geometryN(i).toTriangle_3());
+      CGAL::Triangle_3<K> const tri(surf.patchN(i).toTriangle_3());
       CGAL::Point_3<K> const    pa(tri[0]);
       CGAL::Point_3<K> const    pb(tri[1]);
       CGAL::Point_3<K> const    pc(tri[2]);

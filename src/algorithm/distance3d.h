@@ -7,6 +7,7 @@
 
 #include "SFCGAL/Geometry.h"
 #include "SFCGAL/Kernel.h"
+#include "SFCGAL/PolyhedralSurface.h"
 #include "SFCGAL/config.h"
 
 namespace SFCGAL {
@@ -63,6 +64,22 @@ distancePointTriangle3D(const Point &gA, const Triangle &gB);
 SFCGAL_API double
 distancePointPolygon3D(const Point &gA, const Polygon &gB);
 /**
+ * distance between a Point and a PolyhedralSurface
+ * @ingroup detail
+ */
+SFCGAL_API auto
+distancePointPolyhedralSurface3D(const Point             &pointA,
+                                 const PolyhedralSurface &polySurfaceB)
+    -> double;
+/**
+ * distance between a Point and a TriangulatedSurface
+ * @ingroup detail
+ */
+SFCGAL_API auto
+distancePointTriangulatedSurface3D(
+    const Point &pointA, const TriangulatedSurface &triangulatedSurfaceB)
+    -> double;
+/**
  * distance between a Point and a Solid
  * @ingroup detail
  */
@@ -96,6 +113,22 @@ distanceLineStringTriangle3D(const LineString &gA, const Triangle &gB);
 SFCGAL_API double
 distanceLineStringPolygon3D(const LineString &gA, const Polygon &gB);
 /**
+ * distance between a LineString and a PolyhedralSurface
+ * @ingroup detail
+ */
+SFCGAL_API auto
+distanceLineStringPolyhedralSurface3D(const LineString        &lineA,
+                                      const PolyhedralSurface &polySurfaceB)
+    -> double;
+/**
+ * distance between a LineString and a TriangulatedSurface
+ * @ingroup detail
+ */
+SFCGAL_API auto
+distanceLineStringTriangulatedSurface3D(
+    const LineString &lineA, const TriangulatedSurface &triangulatedSurfaceB)
+    -> double;
+/**
  * distance between a LineString and a Solid
  * @ingroup detail
  */
@@ -109,6 +142,13 @@ distanceLineStringSolid3D(const LineString &gA, const Solid &gB);
 SFCGAL_API double
 distanceTriangleGeometry3D(const Triangle &gA, const Geometry &gB);
 /**
+ * distance between a Triangle and a PolyhedralSurface
+ * @ingroup detail
+ */
+SFCGAL_API double
+distanceTrianglePolyhedralSurface3D(const Triangle          &triangleA,
+                                    const PolyhedralSurface &polySurfaceB);
+/**
  * distance between a Triangle and a Solid
  * @ingroup detail
  */
@@ -121,6 +161,23 @@ distanceTriangleSolid3D(const Triangle &gA, const Solid &gB);
  */
 SFCGAL_API double
 distancePolygonGeometry3D(const Polygon &gA, const Geometry &gB);
+
+/**
+ * dispatch distance between a PolyhedralSurface and a Geometry
+ * @ingroup detail
+ */
+SFCGAL_API auto
+distancePolyhedralSurfaceGeometry3D(const PolyhedralSurface &polySurfaceA,
+                                    const Geometry          &geomB) -> double;
+
+/**
+ * dispatch distance between a TriangulatedSurface and a Geometry
+ * @ingroup detail
+ */
+SFCGAL_API auto
+distanceTriangulatedSurfaceGeometry3D(
+    const TriangulatedSurface &triangulatedSurfaceA, const Geometry &geomB)
+    -> double;
 
 /**
  * dispatch distance between a Solid and a Geometry

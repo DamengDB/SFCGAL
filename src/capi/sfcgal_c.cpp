@@ -520,25 +520,6 @@ sfcgal_geometry_num_geometries(const sfcgal_geometry_t *geometryCollection)
           ->numGeometries();)
 }
 
-extern "C" auto
-sfcgal_geometry_get_geometry_n(const sfcgal_geometry_t *geometryCollection,
-                               size_t n) -> const sfcgal_geometry_t *
-{
-  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
-      return static_cast<const SFCGAL::Geometry *>(
-                 &(down_const_cast<SFCGAL::Geometry>(geometryCollection)
-                       ->geometryN(n)));)
-}
-
-extern "C" void
-sfcgal_geometry_set_geometry_n(sfcgal_geometry_t *geometryCollection,
-                               sfcgal_geometry_t *geometry, size_t n)
-{
-  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
-      down_cast<SFCGAL::Geometry>(geometryCollection)
-          ->setGeometryN(down_cast<SFCGAL::Geometry>(geometry), n);)
-}
-
 extern "C" void
 sfcgal_geometry_as_text(const sfcgal_geometry_t *pgeom, char **buffer,
                         size_t *len)
@@ -863,6 +844,16 @@ sfcgal_geometry_collection_geometry_n(const sfcgal_geometry_t *geom, size_t i)
       return static_cast<const SFCGAL::Geometry *>(&g->geometryN(i));)
 }
 
+extern "C" auto
+sfcgal_geometry_collection_set_geometry_n(sfcgal_geometry_t *collection,
+                                          sfcgal_geometry_t *geometry, size_t i)
+    -> void
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      return down_cast<SFCGAL::GeometryCollection>(collection)
+          ->setGeometryN(reinterpret_cast<SFCGAL::Geometry *>(geometry), i);)
+}
+
 extern "C" void
 sfcgal_geometry_collection_add_geometry(sfcgal_geometry_t *geom,
                                         sfcgal_geometry_t *ngeom)
@@ -915,29 +906,57 @@ sfcgal_polyhedral_surface_create() -> sfcgal_geometry_t *
 }
 
 extern "C" auto
-sfcgal_polyhedral_surface_num_polygons(const sfcgal_geometry_t *geom) -> size_t
+sfcgal_polyhedral_surface_num_patchs(const sfcgal_geometry_t *geom) -> size_t
 {
   SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
-      return down_const_cast<SFCGAL::PolyhedralSurface>(geom)->numPolygons();)
+      return down_const_cast<SFCGAL::PolyhedralSurface>(geom)->numPatchs();)
+}
+
+extern "C" auto
+sfcgal_polyhedral_surface_num_polygons(const sfcgal_geometry_t *geom) -> size_t
+{
+  return sfcgal_polyhedral_surface_num_patchs(geom);
+}
+
+extern "C" auto
+sfcgal_polyhedral_surface_patch_n(const sfcgal_geometry_t *geom, size_t i)
+    -> const sfcgal_geometry_t *
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
+      return static_cast<const SFCGAL::Geometry *>(
+                 &down_const_cast<SFCGAL::PolyhedralSurface>(geom)->patchN(i));)
 }
 
 extern "C" auto
 sfcgal_polyhedral_surface_polygon_n(const sfcgal_geometry_t *geom, size_t i)
     -> const sfcgal_geometry_t *
 {
-  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
-      return static_cast<const SFCGAL::Geometry *>(
-                 &down_const_cast<SFCGAL::PolyhedralSurface>(geom)->polygonN(
-                     i));)
+  return sfcgal_polyhedral_surface_patch_n(geom, i);
+}
+
+extern "C" void
+sfcgal_polyhedral_surface_add_patch(sfcgal_geometry_t *geom,
+                                    sfcgal_geometry_t *patch)
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      return down_cast<SFCGAL::PolyhedralSurface>(geom)->addPatch(
+          down_cast<SFCGAL::Polygon>(patch));)
+}
+
+extern "C" void
+sfcgal_polyhedral_surface_set_patch_n(sfcgal_geometry_t *polyhedral,
+                                      sfcgal_geometry_t *patch, size_t i)
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      return down_cast<SFCGAL::PolyhedralSurface>(polyhedral)
+          ->setPatchN(down_cast<SFCGAL::Polygon>(patch), i);)
 }
 
 extern "C" void
 sfcgal_polyhedral_surface_add_polygon(sfcgal_geometry_t *geom,
                                       sfcgal_geometry_t *poly)
 {
-  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
-      return down_cast<SFCGAL::PolyhedralSurface>(geom)->addPolygon(
-          down_cast<SFCGAL::Polygon>(poly));)
+  return sfcgal_polyhedral_surface_add_patch(geom, poly);
 }
 
 /**
@@ -953,31 +972,59 @@ sfcgal_triangulated_surface_create() -> sfcgal_geometry_t *
 }
 
 extern "C" auto
+sfcgal_triangulated_surface_num_patchs(const sfcgal_geometry_t *tin) -> size_t
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
+      return down_const_cast<SFCGAL::TriangulatedSurface>(tin)->numPatchs();)
+}
+
+extern "C" auto
 sfcgal_triangulated_surface_num_triangles(const sfcgal_geometry_t *geom)
     -> size_t
 {
+  return sfcgal_triangulated_surface_num_patchs(geom);
+}
+
+extern "C" auto
+sfcgal_triangulated_surface_patch_n(const sfcgal_geometry_t *tin, size_t i)
+    -> const sfcgal_geometry_t *
+{
   SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
-      return down_const_cast<SFCGAL::TriangulatedSurface>(geom)
-          ->numTriangles();)
+      return static_cast<const SFCGAL::Geometry *>(
+                 &down_const_cast<SFCGAL::TriangulatedSurface>(tin)->patchN(
+                     i));)
 }
 
 extern "C" auto
 sfcgal_triangulated_surface_triangle_n(const sfcgal_geometry_t *geom, size_t i)
     -> const sfcgal_geometry_t *
 {
-  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR(
-      return static_cast<const SFCGAL::Geometry *>(
-                 &down_const_cast<SFCGAL::TriangulatedSurface>(geom)->triangleN(
-                     i));)
+  return sfcgal_triangulated_surface_patch_n(geom, i);
+}
+
+extern "C" void
+sfcgal_triangulated_surface_set_patch_n(sfcgal_geometry_t *tin,
+                                        sfcgal_geometry_t *patch, size_t i)
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      return down_cast<SFCGAL::TriangulatedSurface>(tin)->setPatchN(
+          down_cast<SFCGAL::Triangle>(patch), i);)
+}
+
+extern "C" void
+sfcgal_triangulated_surface_add_patch(sfcgal_geometry_t *tin,
+                                      sfcgal_geometry_t *patch)
+{
+  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
+      down_cast<SFCGAL::TriangulatedSurface>(tin)->addPatch(
+          down_cast<SFCGAL::Triangle>(patch));)
 }
 
 extern "C" void
 sfcgal_triangulated_surface_add_triangle(sfcgal_geometry_t *geom,
                                          sfcgal_geometry_t *triangle)
 {
-  SFCGAL_GEOMETRY_CONVERT_CATCH_TO_ERROR_NO_RET(
-      down_cast<SFCGAL::TriangulatedSurface>(geom)->addTriangle(
-          down_cast<SFCGAL::Triangle>(triangle));)
+  return sfcgal_triangulated_surface_add_patch(geom, triangle);
 }
 
 /**

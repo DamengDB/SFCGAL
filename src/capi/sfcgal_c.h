@@ -264,36 +264,13 @@ sfcgal_geometry_delete(sfcgal_geometry_t *);
 
 /**
  * Returns the number of geometries of the given geometry collection
- * @pre geometry must be a GeometryCollection, a PolyhedralSurface or a
- * TriangulatedSurface. Otherwise, 1 is returned.  For empty geometries 0 is
+ * @pre geometry must be a GeometryCollection.
+ * Otherwise, 1 is returned.  For empty geometries 0 is
  * returned.
  * @ingroup capi
  */
 SFCGAL_API size_t
 sfcgal_geometry_num_geometries(const sfcgal_geometry_t *geometryCollection);
-
-/**
- * Returns the n-th geometry of the given geometry collection
- * @pre geometry must be a GeometryCollection, a PolyhedralSurface or a
- * TriangulatedSurface. Otherwise, the geometry is returned.
- * @post the returned Geometry is not writable and must not be deallocated by
- * the caller
- * @ingroup capi
- */
-SFCGAL_API const sfcgal_geometry_t *
-sfcgal_geometry_get_geometry_n(const sfcgal_geometry_t *geometryCollection,
-                               size_t                   n);
-
-/**
- * Sets the n-th geometry of the given geometry collection
- * @pre geometryCollection must be a GeometryCollection, a PolyhedralSurface or
- * a TriangulatedSurface. Otherwise, nothing happens. The ownership of the
- * geometry is taken. The caller is not responsible anymore of its deallocation.
- * @ingroup capi
- */
-SFCGAL_API void
-sfcgal_geometry_set_geometry_n(sfcgal_geometry_t *geometryCollection,
-                               sfcgal_geometry_t *geometry, size_t n);
 
 /**
  * Returns a WKT representation of the given geometry using CGAL exact integer
@@ -617,13 +594,24 @@ sfcgal_geometry_collection_num_geometries(const sfcgal_geometry_t *collection);
  * @pre i >= 0 and i < sfcgal_geometry_collection_num_geometries
  * @post the returned Geometry is not writable and must not be deallocated by
  * the caller
- * @deprecated Use sfcgal_geometry_get_geometry_n
  * @ingroup capi
  */
-SFCGAL_DEPRECATED("Use sfcgal_geometry_get_geometry_n instead.")
 SFCGAL_API const sfcgal_geometry_t *
 sfcgal_geometry_collection_geometry_n(const sfcgal_geometry_t *collection,
                                       size_t                   i);
+
+/**
+ * Set the ith geometry of a given GeometryCollection
+ * @pre collection is a GeometryCollection
+ * @pre i >= 0 and i < sfcgal_geometry_num_geometries( collection )
+ * The ownership of the geometry is taken. The caller is not responsible anymore
+ * of its deallocation.
+ * @ingroup capi
+ */
+SFCGAL_API void
+sfcgal_geometry_collection_set_geometry_n(sfcgal_geometry_t *collection,
+                                          sfcgal_geometry_t *geometry,
+                                          size_t             i);
 
 /**
  * Adds a Geometry to a given GeometryCollection
@@ -672,28 +660,73 @@ SFCGAL_API sfcgal_geometry_t *
 sfcgal_polyhedral_surface_create();
 
 /**
- * Returns the number of polygons of a given PolyhedralSurface
+ * Returns the number of patchs of a given PolyhedralSurface
  * @pre polyhedral must be a PolyhedralSurface
- * @deprecated Use sfcgal_geometry_num_geometries instead
  * @ingroup capi
  */
-SFCGAL_DEPRECATED("Use sfcgal_geometry_num_geometries instead.")
+SFCGAL_API size_t
+sfcgal_polyhedral_surface_num_patchs(const sfcgal_geometry_t *polyhedral);
+
+/**
+ * Returns the number of polygons of a given PolyhedralSurface
+ * @pre polyhedral must be a PolyhedralSurface
+ * @deprecated Use sfcgal_polyhedral_surface_num_patchs instead.
+ * @ingroup capi
+ */
+SFCGAL_DEPRECATED("Use sfcgal_polyhedral_surface_num_patchs instead.")
 SFCGAL_API size_t
 sfcgal_polyhedral_surface_num_polygons(const sfcgal_geometry_t *polyhedral);
 
 /**
- * Returns the ith polygon of a given PolyhedralSurface
+ * Returns the ith patch of a given PolyhedralSurface
  * @pre polyhedral must be a PolyhedralSurface
- * @pre i >= 0 and i < sfcgal_polyhedral_surface_num_polygons(polyhedral)
+ * @pre i >= 0 and i < sfcgal_polyhedral_surface_num_patchs(polyhedral)
  * @post the returned Polygon is not writable and must not be deallocated by the
  * caller
- * @deprecated Use sfcgal_geometry_get_geometry_n instead
  * @ingroup capi
  */
-SFCGAL_DEPRECATED("Use sfcgal_geometry_get_geometry_n instead.")
+SFCGAL_API const sfcgal_geometry_t *
+sfcgal_polyhedral_surface_patch_n(const sfcgal_geometry_t *polyhedral,
+                                  size_t                   i);
+
+/**
+ * Returns the ith polygon of a given PolyhedralSurface
+ * @pre polyhedral must be a PolyhedralSurface
+ * @pre i >= 0 and i < sfcgal_polyhedral_surface_num_patchs(polyhedral)
+ * @post the returned Polygon is not writable and must not be deallocated by the
+ * caller
+ * @deprecated Use sfcgal_polyhedral_surface_patch_n instead
+ * @ingroup capi
+ */
+SFCGAL_DEPRECATED("Use sfcgal_polyhedral_surface_patch_n instead.")
 SFCGAL_API const sfcgal_geometry_t *
 sfcgal_polyhedral_surface_polygon_n(const sfcgal_geometry_t *polyhedral,
                                     size_t                   i);
+
+/**
+ * Adds a Patch to a given PolyhedralSurface
+ * @pre polyhedral must be a PolyhedralSurface
+ * @pre patch must be a Polygon
+ * @post the ownership of the Polygon is taken. The caller is not responsible
+ * anymore of its deallocation
+ * @ingroup capi
+ */
+SFCGAL_API void
+sfcgal_polyhedral_surface_add_patch(sfcgal_geometry_t *polyhedral,
+                                    sfcgal_geometry_t *patch);
+
+/**
+ * Set the ith patch of a given PolyhedralSurface
+ * @pre polyhedral must be a PolyhedralSurface.
+ * @pre patch must be a Polygon.
+ * @pre i >= 0 and i < sfcgal_polyhedral_surface_num_patchs(polyhedral)
+ * The ownership of the polygon is taken. The caller is not responsible anymore
+ * of its deallocation.
+ * @ingroup capi
+ */
+SFCGAL_API void
+sfcgal_polyhedral_surface_set_patch_n(sfcgal_geometry_t *polyhedral,
+                                      sfcgal_geometry_t *patch, size_t i);
 
 /**
  * Adds a Polygon to a given PolyhedralSurface
@@ -701,8 +734,10 @@ sfcgal_polyhedral_surface_polygon_n(const sfcgal_geometry_t *polyhedral,
  * @pre polygon must be a Polygon
  * @post the ownership of the Polygon is taken. The caller is not responsible
  * anymore of its deallocation
+ * @deprecated Use sfcgal_polyhedral_surface_add_patch instead.
  * @ingroup capi
  */
+SFCGAL_DEPRECATED("Use sfcgal_polyhedral_surface_add_patch instead.")
 SFCGAL_API void
 sfcgal_polyhedral_surface_add_polygon(sfcgal_geometry_t *polyhedral,
                                       sfcgal_geometry_t *polygon);
@@ -715,27 +750,71 @@ SFCGAL_API sfcgal_geometry_t *
 sfcgal_triangulated_surface_create();
 
 /**
- * Returns the number of triangles of a given TriangulatedSurface
+ * Returns the number of patchs of a given TriangulatedSurface
  * @pre tin must be a TriangulatedSurface
- * @deprecated Use sfcgal_geometry_num_geometries instead
  * @ingroup capi
  */
-SFCGAL_DEPRECATED("Use sfcgal_geometry_num_geometries instead.")
+SFCGAL_API size_t
+sfcgal_triangulated_surface_num_patchs(const sfcgal_geometry_t *tin);
+
+/**
+ * Returns the number of triangles of a given TriangulatedSurface
+ * @pre tin must be a TriangulatedSurface
+ * @deprecated Use sfcgal_triangulated_surface_num_patchs instead.
+ * @ingroup capi
+ */
+SFCGAL_DEPRECATED("Use sfcgal_triangulated_surface_num_patchs instead.")
 SFCGAL_API size_t
 sfcgal_triangulated_surface_num_triangles(const sfcgal_geometry_t *tin);
 
 /**
- * Returns the ith Triangle of a given TriangulatedSurface
+ * Returns the ith Patch of a given TriangulatedSurface
  * @pre tin must be a TriangulatedSurface
- * @pre i >= 0 and i < sfcgal_triangulated_surface_num_triangles( tin )
+ * @pre i >= 0 and i < sfcgal_triangulated_surface_num_patchs( tin )
  * @post the returned Triangle is not writable and must not be deallocated by
  * the caller
- * @deprecated Use sfcgal_geometry_get_geometry_n
  * @ingroup capi
  */
-SFCGAL_DEPRECATED("Use sfcgal_geometry_get_geometry_n instead.")
+SFCGAL_API const sfcgal_geometry_t *
+sfcgal_triangulated_surface_patch_n(const sfcgal_geometry_t *tin, size_t i);
+
+/**
+ * Returns the ith Triangle of a given TriangulatedSurface
+ * @pre tin must be a TriangulatedSurface
+ * @pre i >= 0 and i < sfcgal_triangulated_surface_num_patchs( tin )
+ * @post the returned Triangle is not writable and must not be deallocated by
+ * the caller
+ * @deprecated Use sfcgal_triangulated_surface_patch_n instead.
+ * @ingroup capi
+ */
+SFCGAL_DEPRECATED("Use sfcgal_triangulated_surface_patch_n instead.")
 SFCGAL_API const sfcgal_geometry_t *
 sfcgal_triangulated_surface_triangle_n(const sfcgal_geometry_t *tin, size_t i);
+
+/**
+ * Set the ith patch of a given TriangulatedSurface
+ * @pre tin must be a TriangulatedSurface
+ * @pre patch must be a Triangle.
+ * @pre i >= 0 and i < sfcgal_triangulated_surface_num_patchs( tin )
+ * The ownership of the triangle is taken. The caller is not responsible anymore
+ * of its deallocation.
+ * @ingroup capi
+ */
+SFCGAL_API void
+sfcgal_triangulated_surface_set_patch_n(sfcgal_geometry_t *tin,
+                                        sfcgal_geometry_t *patch, size_t i);
+
+/**
+ * Adds a Patch to a given TriangulatedSurface
+ * @pre tin must be a TriangulatedSurface
+ * @pre patch must be a Triangle
+ * @post the ownership of the Triangle is taken. The caller is not responsible
+ * anymore of its deallocation
+ * @ingroup capi
+ */
+SFCGAL_API void
+sfcgal_triangulated_surface_add_patch(sfcgal_geometry_t *tin,
+                                      sfcgal_geometry_t *patch);
 
 /**
  * Adds a Triangle to a given TriangulatedSurface
