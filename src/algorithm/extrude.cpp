@@ -148,7 +148,7 @@ extrude(const Polygon &g, const Kernel::Vector_3 &v, bool addTop) -> Solid *
     std::unique_ptr<PolyhedralSurface> boundaryExtruded(
         extrude(bottom.ringN(i), v));
 
-    for (size_t j = 0; j < boundaryExtruded->numPatchs(); j++) {
+    for (size_t j = 0; j < boundaryExtruded->numPatches(); j++) {
       boundaryExtruded->patchN(j).reverse();
       polyhedralSurface.addPatch(boundaryExtruded->patchN(j));
     }
@@ -192,7 +192,7 @@ extrude(const MultiLineString &g, const Kernel::Vector_3 &v)
   for (size_t i = 0; i < g.numGeometries(); i++) {
     std::unique_ptr<PolyhedralSurface> extruded(extrude(g.lineStringN(i), v));
 
-    for (size_t j = 0; j < extruded->numPatchs(); j++) {
+    for (size_t j = 0; j < extruded->numPatches(); j++) {
       result->addPatch(extruded->patchN(j));
     }
   }
@@ -226,7 +226,7 @@ extrude(const TriangulatedSurface &g, const Kernel::Vector_3 &v) -> Solid *
   }
 
   // bottom and top
-  for (size_t i = 0; i < g.numPatchs(); i++) {
+  for (size_t i = 0; i < g.numPatches(); i++) {
     Triangle bottomPart(g.patchN(i));
     force3D(bottomPart);
     bottomPart.reverse();

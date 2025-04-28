@@ -406,7 +406,7 @@ WktWriter::write(const TriangulatedSurface &g)
 
   _s << "("; // begin TIN
 
-  for (size_t i = 0; i < g.numPatchs(); i++) {
+  for (size_t i = 0; i < g.numPatches(); i++) {
     if (i != 0) {
       _s << ",";
     }
@@ -436,7 +436,7 @@ WktWriter::writeInner(const PolyhedralSurface &g)
 {
   _s << "("; // begin POLYHEDRALSURFACE
 
-  for (size_t i = 0; i < g.numPatchs(); i++) {
+  for (size_t i = 0; i < g.numPatches(); i++) {
     if (i != 0) {
       _s << ",";
     }

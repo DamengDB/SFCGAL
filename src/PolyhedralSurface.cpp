@@ -29,7 +29,7 @@ PolyhedralSurface::PolyhedralSurface(const std::unique_ptr<Geometry> &geometry)
   } else if (geometry->is<TriangulatedSurface>()) {
     const TriangulatedSurface &triangulatedSurface =
         geometry->as<TriangulatedSurface>();
-    for (size_t i = 0; i < triangulatedSurface.numPatchs(); ++i) {
+    for (size_t i = 0; i < triangulatedSurface.numPatches(); ++i) {
       this->addPatch(triangulatedSurface.patchN(i));
     }
   } else if (geometry->is<Polygon>()) {
@@ -203,7 +203,7 @@ PolyhedralSurface::addPatch(Polygon *patch)
 void
 PolyhedralSurface::addPatchs(const PolyhedralSurface &polyhedralSurface)
 {
-  for (size_t i = 0; i < polyhedralSurface.numPatchs(); i++) {
+  for (size_t i = 0; i < polyhedralSurface.numPatches(); i++) {
     addPatch(polyhedralSurface.patchN(i));
   }
 }
@@ -231,11 +231,11 @@ PolyhedralSurface::setPatchN(Polygon *patch, size_t const &n)
 {
   BOOST_ASSERT(polygon != NULL);
 
-  if (n >= numPatchs()) {
+  if (n >= numPatches()) {
     BOOST_THROW_EXCEPTION(
         Exception((boost::format("Cannot set geometry at position %s. "
                                  "PolyhedralSurface has only %d geometries.") %
-                   n % numPatchs())
+                   n % numPatches())
                       .str()));
   }
 

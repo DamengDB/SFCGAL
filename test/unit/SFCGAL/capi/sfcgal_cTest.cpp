@@ -635,7 +635,7 @@ BOOST_AUTO_TEST_CASE(testGeometryN)
   BOOST_CHECK(!polySurface0->isEmpty());
   BOOST_CHECK(!polySurface2->isEmpty());
   BOOST_CHECK_EQUAL(sfcgal_geometry_num_geometries(polySurface.get()), 1);
-  BOOST_CHECK_EQUAL(sfcgal_polyhedral_surface_num_patchs(polySurface.get()), 3);
+  BOOST_CHECK_EQUAL(sfcgal_polyhedral_surface_num_patches(polySurface.get()), 3);
   BOOST_CHECK(sfcgal_geometry_covers_3d(sfcgal_polyhedral_surface_patch_n(polySurface.get(), 0), polySurface0.get()));
   BOOST_CHECK(hasError == false);
   hasError = false;
@@ -651,7 +651,7 @@ BOOST_AUTO_TEST_CASE(testGeometryN)
   BOOST_CHECK(!tin0->isEmpty());
   BOOST_CHECK(!tin2->isEmpty());
   BOOST_CHECK_EQUAL(sfcgal_geometry_num_geometries(tin.get()), 1);
-  BOOST_CHECK_EQUAL(sfcgal_triangulated_surface_num_patchs(tin.get()), 3);
+  BOOST_CHECK_EQUAL(sfcgal_triangulated_surface_num_patches(tin.get()), 3);
   BOOST_CHECK(sfcgal_geometry_covers_3d(sfcgal_triangulated_surface_patch_n(tin.get(), 0), tin0.get()));
   BOOST_CHECK(hasError == false);
   hasError = false;
