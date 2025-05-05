@@ -428,6 +428,7 @@ sfcgal_linestring_num_points(const sfcgal_geometry_t *linestring);
 
 /**
  * Returns the ith point of a given LineString
+ * @param linestring the input LineString
  * @param i is the point index in the LineString
  * @pre linestring must be a LineString
  * @pre i >= and i < sfcgal_linestring_num_points
@@ -977,8 +978,11 @@ sfcgal_prepared_geometry_set_srid(sfcgal_prepared_geometry_t *prepared, srid_t);
 
 /**
  * Returns an EWKT representation of the given PreparedGeometry
- * @param num_decimals number of decimals. -2 for a variable number of decimals.
- * -1 for an exact representation
+ * @param[in] prepared the input geometry
+ * @param[in] num_decimals number of decimals. -2 for a variable number of
+ * decimals.
+ * @param[out] buffer the EWKT buffer
+ * @param[out] len the size of the buffer
  * @post buffer is returned allocated and must be freed by the caller
  * @ingroup capi
  */
@@ -1377,6 +1381,11 @@ sfcgal_geometry_line_sub_string(const sfcgal_geometry_t *geom, double start,
  * @pre isValid(geom) == true
  * @pre alpha >= 0
  * @post isValid(return) == true
+ * @param geom the input geometry
+ * @param alpha It can have values from 0 to infinity. Smaller alpha values
+ * produce more concave results. Alpha values greater than some data-dependent
+ * value produce the convex hull of the input.
+ * @param allow_holes defines whether alpha shapes are allowed to contain holes
  * @ingroup capi
  */
 SFCGAL_API sfcgal_geometry_t *
@@ -1389,6 +1398,10 @@ sfcgal_geometry_alpha_shapes(const sfcgal_geometry_t *geom, double alpha,
  * @pre alpha >= 0
  * @pre nb_components >= 0
  * @post isValid(return) == true
+ * @param geom the input geometry
+ * @param allow_holes defines whether alpha shapes are allowed to contain holes
+ * @param nb_components the number of connected components in the output
+ * geometry
  * @ingroup capi
  */
 SFCGAL_API sfcgal_geometry_t *
@@ -1498,7 +1511,9 @@ sfcgal_geometry_is_equals(const sfcgal_geometry_t *geom1,
  * Returns true if geom1 is almost equals to geom2.
  *
  * For each point of geom1 there is a point in geom2 within tolerance distance.
- * @param tolerance
+ * @param geom1 the first geometry
+ * @param geom2 the second geometry
+ * @param tolerance the tolerance
  * @pre isValid(geom) == true
  * @post isValid(return) == true
  * @ingroup capi
