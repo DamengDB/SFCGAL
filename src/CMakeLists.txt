@@ -61,13 +61,16 @@ add_dependencies( SFCGAL copy )
 set_target_properties( SFCGAL PROPERTIES VERSION ${SFCGAL_VERSION}
                                          SOVERSION ${SFCGAL_VERSION_MAJOR} )
 
-target_link_libraries( SFCGAL CGAL::CGAL CGAL::CGAL_Core)
+target_link_libraries( SFCGAL ${CGAL_3RD_PARTY_LIBRARIES})
 
 if( CGAL_USE_GMPXX )
-target_link_libraries( SFCGAL gmpxx )
+  target_link_libraries( SFCGAL gmpxx )
 endif()
 
 target_link_libraries( SFCGAL ${Boost_LIBRARIES} )
+set_target_properties(SFCGAL PROPERTIES
+  INTERFACE_LINK_LIBRARIES ""
+)
 
 if ( ${Use_precompiled_headers} )
   if(PCHSupport_FOUND)

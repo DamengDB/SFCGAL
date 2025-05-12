@@ -1,5 +1,11 @@
 cmake_minimum_required( VERSION 3.6 )
-project( SFCGAL )
+
+set( SFCGAL_VERSION_MAJOR 2 )
+set( SFCGAL_VERSION_MINOR 1 )
+set( SFCGAL_VERSION_PATCH 0 )
+
+set( SFCGAL_VERSION "${SFCGAL_VERSION_MAJOR}.${SFCGAL_VERSION_MINOR}.${SFCGAL_VERSION_PATCH}" )
+project( SFCGAL VERSION ${SFCGAL_VERSION} )
 
 set( CMAKE_DEBUG_POSTFIX "d" )
 set(CMAKE_CXX_STANDARD 17)
@@ -58,12 +64,6 @@ endif(NOT MSVC)
 #-- include finders and co
 set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules;${CMAKE_MODULE_PATH}" )
 
-set( SFCGAL_VERSION_MAJOR 2 )
-set( SFCGAL_VERSION_MINOR 1 )
-set( SFCGAL_VERSION_PATCH 0 )
-
-set( SFCGAL_VERSION "${SFCGAL_VERSION_MAJOR}.${SFCGAL_VERSION_MINOR}.${SFCGAL_VERSION_PATCH}" )
-
 if (CMAKE_CXX_COMPILER MATCHES ".*clang")
     set(CMAKE_COMPILER_IS_CLANGXX 1)
 endif ()
@@ -89,6 +89,8 @@ endif()
 
 find_package( CGAL 5.6 COMPONENTS Core REQUIRED )
 message( STATUS "CGAL ${CGAL_VERSION} found" )
+
+set(CGAL_3RD_PARTY_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
 
 include_directories( ${CMAKE_BINARY_DIR}/include )
 
@@ -121,13 +123,9 @@ endif()
 
 #-- minimalist build allowed with boost version older than 1.48
 set( SFCGAL_Boost_COMPONENTS thread system serialization )
-#-- unit test
-if ( SFCGAL_BUILD_TESTS )
-	set( SFCGAL_Boost_COMPONENTS unit_test_framework program_options ${SFCGAL_Boost_COMPONENTS} )
-endif()
 #-- program_options
 if ( SFCGAL_BUILD_TESTS OR SFCGAL_BUILD_EXAMPLES OR SFCGAL_BUILD_OSG )
-	set( SFCGAL_Boost_COMPONENTS program_options chrono filesystem timer ${SFCGAL_Boost_COMPONENTS} )
+	set( SFCGAL_Boost_COMPONENTS chrono unit_test_framework filesystem program_options timer ${SFCGAL_Boost_COMPONENTS} )
 endif()
 find_package( Boost COMPONENTS ${SFCGAL_Boost_COMPONENTS} REQUIRED )
 if((${Boost_MAJOR_VERSION} EQUAL 1) AND (${Boost_MINOR_VERSION} EQUAL 58))
@@ -276,3 +274,40 @@ install( PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/sfcgal-config DESTINATION bin )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/sfcgal.pc.in ${CMAKE_CURRENT_BINARY_DIR}/sfcgal.pc @ONLY)
 install( FILES ${CMAKE_CURRENT_BINARY_DIR}/sfcgal.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+set(SFCGAL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
+set(SFCGAL_LIBRARY_DIR "${CMAKE_INSTALL_LIBDIR}")
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/SFCGALConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/SFCGALConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SFCGAL"
+    PATH_VARS SFCGAL_INCLUDE_DIR SFCGAL_LIBRARY_DIR
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/SFCGALConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/SFCGALConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/SFCGALConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SFCGAL"
+)
+
+install(TARGETS SFCGAL
+        EXPORT SFCGALTargets
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+install(EXPORT SFCGALTargets
+        FILE SFCGALTargets.cmake
+        NAMESPACE SFCGAL::
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SFCGAL")
