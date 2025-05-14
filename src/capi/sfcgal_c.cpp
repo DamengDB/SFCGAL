@@ -120,8 +120,8 @@ sfcgal_set_error_handlers(sfcgal_error_handler_t warning_handler,
   __sfcgal_error_handler   = error_handler;
 }
 
-static sfcgal_alloc_handler_t sfcgal_alloc_handler = malloc;
-static sfcgal_free_handler_t  sfcgal_free_handler  = free;
+sfcgal_alloc_handler_t sfcgal_alloc_handler = malloc;
+sfcgal_free_handler_t  sfcgal_free_handler  = free;
 
 extern "C" void
 sfcgal_set_alloc_handlers(sfcgal_alloc_handler_t alloc_handler,
@@ -1031,6 +1031,7 @@ sfcgal_geometry_force_lhr(const sfcgal_geometry_t *ga) -> sfcgal_geometry_t *
     SFCGAL_WARNING("  with A: %s",
                    ((const SFCGAL::Geometry *)(ga))->asText().c_str());
     SFCGAL_ERROR("%s", e.what());
+    delete gb;
     return nullptr;
   }
 
@@ -1051,6 +1052,7 @@ sfcgal_geometry_force_rhr(const sfcgal_geometry_t *ga) -> sfcgal_geometry_t *
     SFCGAL_WARNING("  with A: %s",
                    ((const SFCGAL::Geometry *)(ga))->asText().c_str());
     SFCGAL_ERROR("%s", e.what());
+    delete gb;
     return nullptr;
   }
 
@@ -1073,6 +1075,7 @@ sfcgal_geometry_triangulate_2dz(const sfcgal_geometry_t *ga)
     SFCGAL_WARNING("  with A: %s",
                    ((const SFCGAL::Geometry *)(ga))->asText().c_str());
     SFCGAL_ERROR("%s", e.what());
+    delete surf;
     return nullptr;
   }
 
@@ -1119,6 +1122,7 @@ sfcgal_geometry_round(const sfcgal_geometry_t *ga, int scale)
     SFCGAL_WARNING("  with A: %s",
                    ((const SFCGAL::Geometry *)(ga))->asText().c_str());
     SFCGAL_ERROR("%s", e.what());
+    delete gb;
     return nullptr;
   }
 

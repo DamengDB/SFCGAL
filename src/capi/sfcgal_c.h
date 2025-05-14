@@ -1183,6 +1183,9 @@ sfcgal_set_error_handlers(sfcgal_error_handler_t warning_handler,
 typedef void *(*sfcgal_alloc_handler_t)(size_t);
 typedef void (*sfcgal_free_handler_t)(void *);
 
+extern sfcgal_alloc_handler_t sfcgal_alloc_handler;
+extern sfcgal_free_handler_t  sfcgal_free_handler;
+
 /**
  * Sets the error handlers. These callbacks are called on warning or error
  * @param malloc_handler is the function to call for memory allocation. The

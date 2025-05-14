@@ -676,7 +676,7 @@ recompose_segments(const typename GeometrySet<Dim>::SegmentCollection &segments,
       boost::graph_traits<Graph>::out_edge_iterator ej, ek;
 
       for (boost::tie(ej, ek) = boost::out_edges(boost::target(root, g), g);
-           ek - ej == 1 && *ej != root;
+           ek - ej == 1 && *ej != root && boost::get(boost::edge_color, g)[*ej] != boost::black_color;
            boost::tie(ej, ek) = boost::out_edges(boost::target(*ej, g), g)) {
         line->addPoint(points[boost::target(*ej, g)]);
         boost::get(boost::edge_color, g)[*ej] = boost::black_color;

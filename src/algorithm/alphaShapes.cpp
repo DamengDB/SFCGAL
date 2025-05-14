@@ -82,6 +82,10 @@ computeAlpha(const Geometry &g, Alpha_shape_2 &alphaShape, double alpha = 0,
 
   std::vector<Segment_2> segments;
   alphaShape.make_alpha_shape(points.begin(), points.end());
+  if (alphaShape.dimension() < 2)    //the collinearity of the point set can't be used for alphaShape
+  {
+      return result;
+  }
   alphaShape.set_alpha(Kernel::FT(alpha));
   alpha_edges(alphaShape, std::back_inserter(segments));
 
